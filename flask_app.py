@@ -11,9 +11,7 @@ import collections
 import fvomail
 import json
 import os
-#import stripe
 
-#stripe.api_key = "sk_test_51H5yQDGH1HRuykisV6tFiYKqGRnD9dNHWYY9IKOYyaXsk60EXR3TzGY4J2GoSSMjPQ7BnxZk1BwjhqKSYKafhBwn00JE0FDIdM"
 SITEPATH = "/home/fvo/mysite/"
 EVENTSPATH = SITEPATH+"events/"
 MEMBERFILE = SITEPATH + "private/members.xlsx"
@@ -254,30 +252,6 @@ def admin():
         heading=msg, dd_list=event_options, form_action="/orienteering/admin", info=event_summary))
 
 
-
-
-
-def calculate_order_amount(items):
-    # Replace this constant with a calculation of the order's amount
-    # Calculate the order total on the server to prevent
-    # people from directly manipulating the amount on the client
-    return 1400
-
-
-@app.route('/create-payment-intent', methods=['POST'])
-def create_payment():
-    try:
-        data = json.loads(request.data)
-        intent = stripe.PaymentIntent.create(
-            amount=calculate_order_amount(data['items']),
-            currency='gbp'
-        )
-
-        return jsonify({
-          'clientSecret': intent['client_secret']
-        })
-    except Exception as e:
-        return jsonify(error=str(e)), 403
 
 
 
