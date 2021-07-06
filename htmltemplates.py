@@ -2,6 +2,10 @@ html_skeleton = '''
             <html>
                 <head>
                     {head}
+
+
+
+                    <script src="https://js.stripe.com/v3/"></script>
                 </head>
                 <body>
                     <div class="row mx-md-n5">
@@ -10,7 +14,38 @@ html_skeleton = '''
                     {body}
                     {footer}
                 </body>
+
             </html>'''
+
+stripe_script = '''
+                <script type="text/javascript">
+                // Create an instance of the Stripe object with your publishable API key
+                var stripe = Stripe("pk_live_51H5yQDGH1HRuykisgVkqgc1yXUSRAW47G2NSQa2OSP9hBnU46uLEYEi2Kv9sUNUwJO2WHkxGEgDy1ltxRNiaNe6l00dfprr5eU");
+                var checkoutButton = document.getElementById("checkout-button");
+                checkoutButton.addEventListener("click", function () {
+                  fetch("/orienteering/create-checkout-session", {
+                    method: "POST",
+                  })
+                    .then(function (response) {
+                      return response.json();
+                    })
+                    .then(function (session) {
+                      return stripe.redirectToCheckout({ sessionId: session.id });
+                    })
+                    .then(function (result) {
+                      // If redirectToCheckout fails due to a browser or network
+                      // error, you should display the localized error message to your
+                      // customer using error.message.
+                      if (result.error) {
+                        alert(result.error.message);
+                      }
+                    })
+                    .catch(function (error) {
+                      console.error("Error:", error);
+                    });
+                });
+              </script>
+              '''
 
 html_head_custom_script = '''
                     <meta charset="utf-8">
@@ -130,6 +165,14 @@ info_box = '''
 ln_button = '''
             <a role="button" class="btn btn-success" href="{ln}">{label}</a>'''
 
+clear_button = '''
+            <a role="button" class="btn btn-danger" href="https://fvo.eu.pythonanywhere.com/orienteering/clear">Cancel Unpaid Entries</a>'''
+
+stripe_button = """
+    <button type="button" class="btn btn-primary" id="checkout-button">Checkout</button>"""+stripe_script
+
+
+
 table_skeleton = '''<table class="table">
                 <thead>
                     <tr>
@@ -166,6 +209,12 @@ navbar = '''
               </li>
               <li class="nav-item active">
                 <a class="nav-link" href="/Entries_Privacy_Notice.html">Privacy</a>
+              </li>
+              <li class="nav-item active">
+                <a class="nav-link" href="/orienteering/invoice">Review pending bookings</a>
+              </li>
+              <li class="nav-item active">
+                <a class="nav-link" href="/FVO_FAQs.pdf">FAQs</a>
               </li>
             </ul>
         </div>
@@ -255,11 +304,11 @@ force_modal = '''   <div class="container">
 modal_jscript = ''' <script type="text/javascript"> $(window).on('load',function(){{$('#staticBackdrop').modal('show');}});</script>'''
 
 def get_dropdown(title="", heading="",dd_list=None, form_action="#", dropdown=dropdown, basic_page=basic_page,
-                html_head=html_head, html_skeleton=html_skeleton, footer="", info=""):
+                html_head=html_head, html_skeleton=html_skeleton, footer="", info="", script=""):
     dd = dropdown.format(choices = "".join( ['<li><a class="dropdown-item" href="'+form_action+'?type='+option+'">'+option+'</a></li>\n' for option in dd_list]))
     if info != "": info=info_box.format(message=info)
     page = basic_page.format(header=heading, info=info, content = dd)
-    head = html_head.format(title=title)
+    head = html_head_custom_script.format(title=title,script=script)
     return html_skeleton.format(head=head, body=page, footer=footer)
 
 def get_form(size=0, title="", heading="", basic_page=basic_page, html_head=html_head,html_skeleton=html_skeleton, submit_loc="", footer="", info="", modal=False):
@@ -272,7 +321,8 @@ def get_form(size=0, title="", heading="", basic_page=basic_page, html_head=html
         script=modal_jscript
         content=force_modal+fields
     else:
-        script=""
+        script =""
+        #script='<script src="https://fvo.eu.pythonanywhere.com/checkout_warning.js"></script>'
         content=fields
     head = html_head_custom_script.format(title=title,script=script)
     page = basic_page.format(header=heading, info=info_box.format(message=info), content=content)
@@ -312,27 +362,27 @@ def select_box_ls(name="", ls=[], required=False):
                                         +item+
                                         '</option>' for item in ls]))
 
-def success(title="", heading="", message="", footer=""):
+def success(title="", heading="", message="", footer="", script=""):
     alert = success_box.format(message=message)
-    head = html_head.format(title=title)
+    head = html_head_custom_script.format(title=title,script=script)
     page = basic_page.format(header=heading, info="", content=alert)
     return html_skeleton.format(head=head, body=page, footer=footer)
 
-def error(title="", heading="", message="", footer=""):
+def error(title="", heading="", message="", footer="", script=""):
     alert = error_box.format(message=message)
-    head = html_head.format(title=title)
+    head = html_head_custom_script.format(title=title,script=script)
     page = basic_page.format(header=heading, info="", content=alert)
     return html_skeleton.format(head=head, body=page, footer=footer)
 
-def warning(title="", heading="", message="", footer=""):
+def warning(title="", heading="", message="", footer="", script=""):
     alert = warning_box.format(message=message)
-    head = html_head.format(title=title)
+    head = html_head_custom_script.format(title=title,script=script)
     page = basic_page.format(header=heading, info="", content=alert)
     return html_skeleton.format(head=head, body=page, footer=footer)
 
-def info(title="", heading="", message="", footer=""):
+def info(title="", heading="", message="", footer="", script=""):
     alert = info_box.format(message=message)
-    head = html_head.format(title=title)
+    head = html_head_custom_script.format(title=title,script=script)
     page = basic_page.format(header=heading, info="", content=alert)
     return html_skeleton.format(head=head, body=page, footer=footer)
 
@@ -341,7 +391,13 @@ def two_buttons_ln(heading="", label1="", label2="", ln1="#", ln2="#", footer=""
     button2 = ln_button.format(label=label2, ln=ln2)
     return basic_page.format(header=heading, content=button1+' Or '+button2, info="", footer=footer)
 
-def table(title="", pgheading="", data=[], headings=None, footer="", info=""):
+def checkout_two_buttons(heading="", label2="", ln2="#", footer=""):
+    button1 = stripe_button
+    button2 = ln_button.format(label=label2, ln=ln2)
+    return basic_page.format(header=heading, content=button1+' Or '+button2, info="")
+
+
+def table(title="", pgheading="", data=[], headings=None, footer="", info="", script=""):
     if not headings: headings = data[0].keys()
     rows, headers = [], []
     for row in data:
@@ -353,7 +409,7 @@ def table(title="", pgheading="", data=[], headings=None, footer="", info=""):
                                 body="".join([row for row in rows]))
     if info != "": info=info_box.format(message=info)
     page = basic_page.format(header=pgheading, content=tab, info=info)
-    pghead = html_head.format(title=title)
+    pghead = html_head_custom_script.format(title=title,script=script)
     return html_skeleton.format(head=pghead, body=page, footer=footer)
 
 def button_ln(heading="", label="", ln="#", footer=""):

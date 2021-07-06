@@ -6,9 +6,11 @@ Created on Fri Jul  3 13:27:57 2020
 """
 
 import openpyxl as xl
-from datetime import datetime
+from datetime import datetime, timedelta
 from filelock import FileLock
+import logging
 
+CUTOFF_OFFSET = timedelta(days=-1, hours=+18) #6pm on day before event
 
 def load_sheets(file):
     wb = xl.load_workbook(file)
@@ -16,6 +18,7 @@ def load_sheets(file):
     fees = wb['EntryFees']
     courses = wb['Courses']
     starts = wb['StartList']
+    #logging.info('all loaded - load_sheets in backend')
     return wb, event, fees, courses, starts
 
 def get_members(file):
@@ -34,18 +37,37 @@ def strip_starts(start_times):
             ls.append(each)
     return ls
 
-def read_ageclass(fees):
+def read_ageclass(fees, event):
     ''' Reads the age classes from the Workbook and assigns their prices '''
     age_class = {}
+    premium = 0
+    if late_entries(event) : premium = get_event_details(event)["entry_premium"]
     for row in fees.iter_rows(min_row=1, max_col=2, values_only=True):
-        age_class[row[0]] = row[1]
+        #logging.info(row)
+        if row[0]:
+            if row[1] > 0:
+                fee = row[1] + premium
+            else:
+                fee = row[1]
+            age_class[row[0]] = fee
     return age_class
 
-def read_course(courses):
+def read_course(event, courses):
     ''' Reads the courses from the Workbook and assigns their descriptions '''
     course = {}
-    for row in courses.iter_rows(min_row=1, max_col=2, values_only=True):
-        course[row[0]] = row[1]
+    for row in courses.iter_rows(min_row=2, max_col=4, values_only=True):
+        warning=""
+        #logging.info(row)
+        if row[1]:
+            descrip = row[1]
+            if row[3].upper()=="YES": warning = "<16s must be shadowed - "
+        else:
+            descrip = ""
+        if not late_entries(event):
+            course[row[0]] = warning+descrip
+        elif not row[2] == 0:
+            #only lists courses with maps available
+            course[row[0]] = warning+descrip
     return course
 
 def get_event_details(event):
@@ -54,6 +76,8 @@ def get_event_details(event):
 
     details["hire_available"] = False
     details["members_only"] = False
+    details["card_payments"] = False
+    details['late_entries'] = False
 
     details["name"] = str(event['B1'].value)
     details["url"] = str(event['B2'].value)
@@ -65,7 +89,26 @@ def get_event_details(event):
     details["closing_pretty"] = (event['B6'].value).strftime('%-d %b %Y %-I:%M%p')
     if str(event ['B7'].value).upper()=="YES": details["hire_available"]=True
     if str(event ['B8'].value).upper()=="YES": details["members_only"]=True
+    if str(event ['B9'].value).upper()=="YES": details["card_payments"]=True
+    if str(event ['B10'].value):
+        logging.info("B10 is {}".format(event ['B10'].value))
+        details["late_entries"]=True
+        details["entry_premium"]=event ['B10'].value
+        # no idea why necessary - but force late entries to false when B10 is blank - fixed a bug!
+        if event ['B10'].value == None: details["late_entries"]=False
     return details
+
+def late_entries(event):
+    details = get_event_details(event)
+    cut_off = details["date"] + CUTOFF_OFFSET
+    logging.info("Late entries tests: {}, {}, {}".format(details["late_entries"], details["closing"]<datetime.now(), datetime.now()<cut_off))
+    logging.info(details["late_entries"])
+    if all([details["late_entries"],details["closing"]<datetime.now(),datetime.now()<cut_off]):
+        logging.info("Late ents set to true")
+        return True
+    else:
+        return False
+
 
 def event_closed(event):
     details = get_event_details(event)
@@ -81,6 +124,10 @@ def hire_available(event):
 def members_only(event):
     details = get_event_details(event)
     return details["members_only"]
+
+def card_payments(event):
+    details = get_event_details(event)
+    return details["card_payments"]
 
 def get_event_summary(event):
     ''' gets the event details then creates a HTML summary, and returns it'''
@@ -105,19 +152,20 @@ def read_time(starts):
             time[temp] = row[1]
     return time
 
-def update_sheet(starts, time, name, course, age_class, fee, dibber, phone, email):
+def update_sheet(event, starts, courses, time, name, course, age_class, fee, dibber, phone, email):
     ''' Writes the information to the Start Sheet '''
-    i=2
+    slot_available = False
+    payment_warning=""
     for row in starts.iter_rows(min_row=2, max_col=8, values_only=True):
         if row[1]: #only consider rows with a name in the entry list, avoids an error as None.Upper() invalid
             if (row[1].upper() == name.upper() and row[3]== age_class) or (row[5] == dibber and dibber!="HIRE"):
                 return False,'''This person appears to already have an entry, please <a href="javascript:history.back()">go back</a>
-                        and enter a new person; make sure you are using the correct SI dibber number; if you are sure this is not a duplicate add "2" after your name, or contact the organiser.
+                        and enter a new person; make sure you are using the correct SI dibber number. You can check if you have already entered with the Entry List link at the top. If you are sure this is not a duplicate contact membership@fvo.org.uk.
                         If you have finished entering people <a href="/orienteering/invoice">go to your</a> invoice to finish.'''
-    for row in starts.iter_rows(min_row=2, max_col=8, values_only=True):
-        if row[0] and row[1] and row[0].strftime("%H:%M") == time:
-            return False,'Whilst you were completing the form this timeslot has been reserved by another participant, please <a href="javascript:history.back()">go back</a> and pick another.'
-        elif row[0] and row[0].strftime("%H:%M") == time :
+    i=2
+    for row in starts.iter_rows(min_row=2, max_col=9, values_only=True):
+        if row[0] and row[0].strftime("%H:%M") == time and not row[1] :
+            slot_available = True
             starts['B{}'.format(i)] = name
             starts['C{}'.format(i)] = course
             starts['D{}'.format(i)] = age_class
@@ -125,31 +173,63 @@ def update_sheet(starts, time, name, course, age_class, fee, dibber, phone, emai
             starts['F{}'.format(i)] = dibber
             starts['G{}'.format(i)] = phone
             starts['H{}'.format(i)] = email
-            return True,"Time {} successfully reserved for {}".format(time,name)
-        i +=1
+            if fee>0:
+                starts['I{}'.format(i)] = datetime.now()
+            else:
+                starts['I{}'.format(i)] = "FREE at {}".format(datetime.now())
 
+            logging.info("status of lateentries {} and card_payments {}".format(late_entries(event),card_payments(event)))
+            if late_entries(event) and "NO MAP" not in age_class.upper() :
+                i=2
+                for line in courses.iter_rows(min_row=2, max_col=4, values_only=True):
+                    if line[0] == course:
+                        current_value = courses['C{}'.format(i)].value
+                        courses['C{}'.format(i)] = current_value -1
+                        logging.info("Available maps on {} course reduced by 1".format(course))
+                    i+=1
+
+            if card_payments(event) : payment_warning = """<p><strong>This time will be reserved for the next 30 minutes -
+                                  if you do not checkout on this device in the next 30 minutes,
+                                  the time may be released.</strong><p>"""
+            return slot_available,"""Time {} successfully reserved for {}. {}
+                                    <p>Please <strong>note</strong> each participant - including shadowers must reserve a start time,
+                                    multiple runners will not be accepted on a single entry. <p><small>Shadowers or family groups can still start
+                                    at the same time on the day - but must reserve multiple slots for COVID compliance.</small></p>     """.format(time,name,payment_warning)
+        i+=1
+
+    #only reaches here is there are NO timeslots that match; this change enables more than one slot with same time.
+    return slot_available,'Whilst you were completing the form this timeslot has been reserved by another participant, please <a href="javascript:history.back()">go back</a> and pick another.'
+
+def confirmed_paid(file, entry_time, name, course):
+    logging.info( 'Attempting to confirm payment in the xlsx' )
+    wb2 = xl.load_workbook(file)
+    starts = wb2['StartList']
+    i=2
+    recorded = False
+    logging.info( 'before the for' )
+    #logging.info(entry_time, name )
+    for row in starts.iter_rows(min_row=2, max_col=9, values_only=True):
+        excel_time = row[0].strftime("%H:%M")
+        #logging.info(excel_time)
+        if excel_time == entry_time and row[1] == name and row[2]==course:
+            #logging.info( 'in the if' )
+            starts['I{}'.format(i)] = "PAID at {}".format(datetime.now())
+            logging.info( '{} paid for {} on {} at {}'.format( name,entry_time,file,datetime.now() ) )
+            recorded = True
+            break
+        i+=1
+    if not recorded:
+        logging.info("###*** ENTRY NOT SAVED *** {} {} {} {} ***###".format(file, entry_time, name, course))
+    write_wbook(wb2,file)
+    logging.info("Saved")
+    return recorded
 
 def write_wbook(wb,filename):
     with FileLock(filename+".lock"):
-        print("Lock acquired.")
+        logging.info("Lock acquired.")
         wb.save(filename)
-
-'''tests
-
-wb, event, fees, courses, starts = load_sheets('data.xlsx')
-time = '11:24'
-name = 'Bla Bla Boom'
-age_class = 'X12'
-course = 'zooming'
-fee = '£12'
-dibber = 'boo'
-phone = '123455'
-email = 'wa@wa.com'
-
-print(update_sheet(starts, time, name, course, age_class, fee, dibber, phone, email))
-print(write_wbook(wb,'data.xlsx'))
-
-'''
+    logging.info("Lock released.")
+    return
 
 def get_entries(starts):
     entries=[]
@@ -163,3 +243,29 @@ def get_entries(starts):
             dct['Dibber No.']=row[5]
             entries.append(dct)
     return entries
+
+def delete_row_content(starts,i):
+    cols='BCDEFGHI'
+    name= starts['B{}'.format(i)]
+    for col in cols:
+        starts['{}{}'.format(col,i)] = None
+    logging.info("deleted row {}: {}".format(i,str(name)))
+
+def cancel_entry(file, entry_time, name, course):
+    i=2
+    changed=False
+    with FileLock(file+".lock"):
+        wb = xl.load_workbook(file)
+        starts = wb['StartList']
+        for row in starts.iter_rows(min_row=2, max_col=9, values_only=True):
+            if row[0]:
+                excel_time = row[0].strftime("%H:%M")
+            else:
+                break
+            if excel_time == entry_time and row[1] == name and row[2]==course:
+                delete_row_content(starts,i)
+                changed=True
+            i+=1
+        if changed:
+            wb.save(file)
+    logging.info("cancelled entry for {} on {}".format(name,course))
