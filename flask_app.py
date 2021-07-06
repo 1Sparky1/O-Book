@@ -11,10 +11,11 @@ import collections
 import fvomail
 import json
 import os
-#from datetime import datetime
+from datetime import datetime
 import stripe
 
-stripe.api_key = "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"
+stripe.api_key = ""
+
 SITEPATH = "/home/fvo/mysite/"
 EVENTSPATH = SITEPATH+"events/"
 MEMBERFILE = SITEPATH + "private/members.xlsx"
@@ -351,6 +352,7 @@ def admin():
 
 
 
+
 @app.route('/orienteering/create-checkout-session', methods=['POST'])
 def create_checkout_session():
     app.logger.info("checkout session initiated")
@@ -373,6 +375,7 @@ def create_checkout_session():
                         success_url=YOUR_DOMAIN + '/orienteering/success',
                         cancel_url=YOUR_DOMAIN + '/orienteering/invoice' )
     return jsonify(id=stripe_session.id)
+
 
 
 
