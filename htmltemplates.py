@@ -118,7 +118,7 @@ inbox_help = '''
 
 select_box = '''
                 <div>
-                    <select {required} class="custom-select" name="{name}" placeholder="{name}">
+                    <select {required} class="custom-select" name="{name}" placeholder="{name}" {extra_params}>
                         <option value="" disabled selected hidden>{name}</option>
                         {options}
                     </select>
@@ -337,7 +337,7 @@ def input_box_help(prefix="", name="", title="", helpinfo="", valid="text", requ
     if required : required = "required"
     return inbox_help.format(pre=prefix, name=name, title=title, helpinfo=helpinfo, valid=valid, required=required, extra_params=extra_params)
 
-def select_box_dict(name="", dict={0:0}, required=False):
+def select_box_dict(name="", dict={0:0}, required=False, extra_params=""):
     if required : required = "required"
     return select_box.format(name=name,required=required,
                         options="".join( ['<option value="'
@@ -346,21 +346,28 @@ def select_box_dict(name="", dict={0:0}, required=False):
                                         +key+
                                         ' ('
                                         +str(dict[key])+
-                                        ')</option>' for key in dict if key != None]))
+                                        ')</option>' for key in dict if key != None]),
+                                        extra_params=extra_params)
 
 def tick_to_close(label="", id="", content="", action="", toggle_box=toggle_box, collapse_box=collapse_box_open):
     box = toggle_box.format(label=label, action=action, id=id)
     hidden = collapse_box.format(id=id, content=content)
     return box + '<div></div><br>' + hidden
 
-def select_box_ls(name="", ls=[], required=False):
+def tick_to_open(label="", id="", content="", action="", toggle_box=toggle_box, collapse_box=collapse_box_closed):
+    box = toggle_box.format(label=label, action=action, id=id)
+    hidden = collapse_box.format(id=id, content=content)
+    return box + '<div></div><br>' + hidden
+
+def select_box_ls(name="", ls=[], required=False, extra_params=""):
     if required : required = "required"
     return select_box.format(name=name, required=required,
                                         options="".join(['<option value="'
                                         +item+
                                         '">'
                                         +item+
-                                        '</option>' for item in ls]))
+                                        '</option>' for item in ls]),
+                                        extra_params=extra_params)
 
 def success(title="", heading="", message="", footer="", script=""):
     alert = success_box.format(message=message)

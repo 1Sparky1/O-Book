@@ -16,12 +16,11 @@ import stripe
 
 stripe.api_key = ""
 
-SITEPATH = "/home/fvo/mysite/"
+SITEPATH = "/home/BenPolwart/O-Book/"
 EVENTSPATH = SITEPATH+"events/"
 MEMBERFILE = SITEPATH + "private/members.xlsx"
 YOUR_DOMAIN = 'http://fvo.eu.pythonanywhere.com'
 
-last_question, v, Qkeys, two_parts, Qt = None, None, None, False, None
 wb, start, start_times, age_classes, courses, starts = None, None, None, None, None, None
 
 app = Flask(__name__,static_folder=".",
@@ -32,6 +31,11 @@ app.config["SECRET_KEY"] = secrets.token_urlsafe(256)
 checkout_warning =  ""
 help_title = "Why Do We Need This?"
 help_info = "We may need these details to contact you if the event is cancelled.  We MAY be required to share this information with Health Protection Scotland if someone at the event develops symptoms of a communicable disease."
+
+club_list = [
+            'FVO',
+            'Other'
+            ]
 
 def checkout_required(session):
     script = ''
@@ -150,12 +154,23 @@ def signup():
                 modal = False
             else :
                 modal = True
-            return htmltemplates.get_form(9, title='Orienteering Signup - Enter', modal=modal, heading='<p>Enter your details</p><p style="color:red;"><small>Every attendee must be registerred separately - if entering as a family select the shadowing option for the other family members.</small></p>', info=event_summary, footer=htmltemplates.navbar.format(session['file_name']),
+            return htmltemplates.get_form(11, title='Orienteering Signup - Enter', modal=modal, heading='<p>Enter your details</p><p style="color:red;"><small>Every attendee must be registerred separately - if entering as a family select the shadowing option for the other family members.</small></p>', info=event_summary, footer=htmltemplates.navbar.format(session['file_name']),
                                     submit_loc="/orienteering/signup").format(  name_section,
                                                                                 htmltemplates.input_box_help('Email', 'Contact Email Address', help_title, help_info, valid='email', required='True'),
                                                                                 htmltemplates.input_box_help('Phone', 'Contact Phone Number', help_title, help_info, valid='tel', required='True'),
+                                                                                htmltemplates.tick_to_open('FVO/SOA/BOF Member', 'member', htmltemplates.select_box_ls('Club', club_list, False, 'id="Club"')
+                                                                                    +"""<script>
+                                                                                        function toggleclub() {
+                                                                                            if (document.getElementById("member").checked == true){
+                                                                                                document.getElementById("Club").setAttribute("required","");
+                                                                                            } else {
+                                                                                                document.getElementById("Club").removeAttribute("required");
+                                                                                            }
+                                                                                        }
+                                                                                        </script>""", 'data-toggle="collapse" data-target="#collapsemember" onclick="toggleclub()"'),
                                                                                 "<p><strong>Course Details:</strong><p>",
-                                                                                htmltemplates.select_box_dict('Age Class', session['age_classes_mod'], required='True'),
+                                                                                htmltemplates.select_box_ls('Sex', ['Male', 'Female'], required='True'),
+                                                                                htmltemplates.input_box('YOB', 'Year Of Birth', valid='number', required='True', extra_params='min="1900" max="2021"'),
                                                                                 htmltemplates.select_box_dict('Course', session['courses'], required='True'),
                                                                                 htmltemplates.select_box_ls('PREFERRED Start Time', session['starts'], required='True'),
                                                                                 '<div></div>',
@@ -167,12 +182,26 @@ def signup():
         session["card_payments"]=False
         if card_payments(event) : session["card_payments"]=True
         app.logger.info('Page running as POST; File: {} opened'.format(session['file']))
-        name, email, phone, age_class, age_class, fee, course, desc, start_time, dib = None, None, None, None, None, None, None, None, None, None
+        name, email, phone, details, date, year, age, age_class, age_class_mod, fee, course, desc, start_time, dib, club = None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
         name = request.form["Name"]
         email = request.form["Email"]
         phone = request.form["Phone"]
-        age_class = request.form["Age Class"]
-        fee = session['age_classes'][age_class]
+        details = get_event_details(event)
+        date = details["date"]
+        year = date.year
+        age = year - int(request.form["YOB"])
+        if request.form["Sex"] == 'Male':
+            age_class = 'M{}'.format(get_age_class(age))
+        else:
+            age_class = 'W{}'.format(get_age_class(age))
+        if request.form.get('member'):
+            age_class_mod = age_class + ' (FVO/SOA/BOF Member)'
+            club = request.form["Club"]
+        else:
+            age_class_mod = age_class + ' (Non-Member)'
+        if not club:
+            club = 'Independant'
+        fee = session['age_classes'][age_class_mod]
         course = request.form["Course"]
         start_time = request.form["PREFERRED Start Time"]
         dib = request.form.get('dib')
@@ -181,7 +210,7 @@ def signup():
         else:
             dib = "HIRE"
         app.logger.info('Data from form: {} opened'.format([name, email, phone, age_class, fee, course, start_time, dib]))
-        result, message = update_sheet(event, start, courses, start_time, name, course, age_class, fee, dib, phone, email)
+        result, message = update_sheet(event, start, courses, start_time, name, course, age_class_mod, fee, dib, phone, email, club)
         app.logger.info(message)
         if result:
             write_wbook(wb,session['file'])
@@ -192,7 +221,7 @@ def signup():
             this_entry['Start Time'] = start_time
             this_entry['Course'] = course
             this_entry['Age Class'] = age_class
-            this_entry['Cost'] = session['age_classes_mod'][age_class]
+            this_entry['Cost'] = '£{}'.format(fee)
             this_entry['Dibber No.'] = dib
             this_entry['Phone'] = phone
             this_entry['Email'] = email
@@ -318,7 +347,7 @@ def view():
     entries = get_entries(start)
     return (htmltemplates.get_dropdown(title='Orienteering Signup - View Entries', script=script, footer=htmltemplates.navbar.format(session['file_name']),
         heading='Choose a different event?', dd_list=event_options, form_action="/orienteering/view-entries", info=event_summary)
-        + htmltemplates.table(pgheading='Current Entries: <p style="color:red"><small>(subject to change check the link above for final version)</small></p>', data=entries, headings=['Name', 'Start Time', 'Course', 'Age Class', 'Dibber No.']))
+        + htmltemplates.table(pgheading='Current Entries: <p style="color:red"><small>(subject to change check the link above for final version)</small></p>', data=entries, headings=['Name', 'Start Time', 'Course', 'Age Class', 'Dibber No.', 'Club']))
 
 @app.route('/orienteering/admin', methods=["GET", "POST"])
 def admin():

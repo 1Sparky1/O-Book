@@ -9,6 +9,7 @@ import openpyxl as xl
 from datetime import datetime, timedelta
 from filelock import FileLock
 import logging
+import math
 
 CUTOFF_OFFSET = timedelta(days=-1, hours=+18) #6pm on day before event
 
@@ -91,7 +92,6 @@ def get_event_details(event):
     if str(event ['B8'].value).upper()=="YES": details["members_only"]=True
     if str(event ['B9'].value).upper()=="YES": details["card_payments"]=True
     if str(event ['B10'].value):
-        logging.info("B10 is {}".format(event ['B10'].value))
         details["late_entries"]=True
         details["entry_premium"]=event ['B10'].value
         # no idea why necessary - but force late entries to false when B10 is blank - fixed a bug!
@@ -101,8 +101,6 @@ def get_event_details(event):
 def late_entries(event):
     details = get_event_details(event)
     cut_off = details["date"] + CUTOFF_OFFSET
-    logging.info("Late entries tests: {}, {}, {}".format(details["late_entries"], details["closing"]<datetime.now(), datetime.now()<cut_off))
-    logging.info(details["late_entries"])
     if all([details["late_entries"],details["closing"]<datetime.now(),datetime.now()<cut_off]):
         logging.info("Late ents set to true")
         return True
@@ -152,7 +150,7 @@ def read_time(starts):
             time[temp] = row[1]
     return time
 
-def update_sheet(event, starts, courses, time, name, course, age_class, fee, dibber, phone, email):
+def update_sheet(event, starts, courses, time, name, course, age_class, fee, dibber, phone, email, club):
     ''' Writes the information to the Start Sheet '''
     slot_available = False
     payment_warning=""
@@ -173,6 +171,7 @@ def update_sheet(event, starts, courses, time, name, course, age_class, fee, dib
             starts['F{}'.format(i)] = dibber
             starts['G{}'.format(i)] = phone
             starts['H{}'.format(i)] = email
+            starts['K{}'.format(i)] = club
             if fee>0:
                 starts['I{}'.format(i)] = datetime.now()
             else:
@@ -233,14 +232,16 @@ def write_wbook(wb,filename):
 
 def get_entries(starts):
     entries=[]
-    for row in starts.iter_rows(min_row=2, max_col=8, values_only=True):
+    for row in starts.iter_rows(min_row=2, max_col=12, values_only=True):
         if row[1]:
             dct = {}
             dct['Name']=row[1]
             dct['Start Time']=row[0].strftime("%H:%M")
             dct['Course']=row[2]
-            dct['Age Class']=row[3]
+            temp_age=row[3]
+            dct['Age Class']=temp_age[0:3]
             dct['Dibber No.']=row[5]
+            dct['Club']=row[10]
             entries.append(dct)
     return entries
 
@@ -269,3 +270,18 @@ def cancel_entry(file, entry_time, name, course):
         if changed:
             wb.save(file)
     logging.info("cancelled entry for {} on {}".format(name,course))
+
+def get_age_class(age):
+    age_class = 0
+    if age <= 8:
+        age_class = 10
+    elif age <= 18:
+        age_class = math.ceil(age/2) * 2
+    elif age <= 29:
+        age_class = 21
+    elif age <= 79:
+        age_class = math.floor(age/5) * 5
+    else:
+        age_class = 75
+    if age_class > 0:
+        return age_class
