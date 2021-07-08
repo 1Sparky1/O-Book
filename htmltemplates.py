@@ -221,7 +221,7 @@ navbar = '''
     </nav>
     '''
 
-force_modal = '''   <div class="container">
+covid_modal = '''   <div class="container">
 
                     <!-- Modal -->
                     <div class="modal fade" id="staticBackdrop" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -311,17 +311,17 @@ def get_dropdown(title="", heading="",dd_list=None, form_action="#", dropdown=dr
     head = html_head_custom_script.format(title=title,script=script)
     return html_skeleton.format(head=head, body=page, footer=footer)
 
-def get_form(size=0, title="", heading="", basic_page=basic_page, html_head=html_head,html_skeleton=html_skeleton, submit_loc="", footer="", info="", modal=False):
+def get_form(size=0, title="", heading="", basic_page=basic_page, html_head=html_head,html_skeleton=html_skeleton, submit_loc="", footer="", info="", modal="", add_script=""):
     fields = '<form method="post" action="{}">'.format(submit_loc)
     for i in range(size):
         fields += " <div></div> {} "
         if i == (size-1):
             fields += '<button type="submit" class="btn btn-success">Submit</button></form>'
     if modal:
-        script=modal_jscript
-        content=force_modal+fields
+        script=modal_jscript+add_script
+        content=modal+fields
     else:
-        script =""
+        script = add_script
         #script='<script src="https://fvo.eu.pythonanywhere.com/checkout_warning.js"></script>'
         content=fields
     head = html_head_custom_script.format(title=title,script=script)
@@ -398,10 +398,11 @@ def two_buttons_ln(heading="", label1="", label2="", ln1="#", ln2="#", footer=""
     button2 = ln_button.format(label=label2, ln=ln2)
     return basic_page.format(header=heading, content=button1+' Or '+button2, info="", footer=footer)
 
-def checkout_two_buttons(heading="", label2="", ln2="#", footer=""):
-    button1 = stripe_button
+def checkout_three_buttons(heading="", label1="", ln1="#", label2="", ln2="#", footer=""):
+    button1 = ln_button.format(label=label1, ln=ln1)
     button2 = ln_button.format(label=label2, ln=ln2)
-    return basic_page.format(header=heading, content=button1+' Or '+button2, info="")
+    button3 = stripe_button
+    return basic_page.format(header=heading, content=button1+', '+button2+' Or '+button3, info="")
 
 
 def table(title="", pgheading="", data=[], headings=None, footer="", info="", script=""):
@@ -422,6 +423,9 @@ def table(title="", pgheading="", data=[], headings=None, footer="", info="", sc
 def button_ln(heading="", label="", ln="#", footer=""):
     button = ln_button.format(label=label, ln=ln)
     return basic_page.format(header=heading, content=button, info="", footer=footer)
+
+def covid_popup():
+    return covid_modal
 
 
 

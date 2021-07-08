@@ -1,19 +1,16 @@
 var link_was_clicked = false;
+
 document.addEventListener("click", function(e) {
-  if (e.target.nodeName.toLowerCase() === 'a') {
-    link_was_clicked = true;
-  }
-}, true);
+    if (e.target.nodeName.toLowerCase() == 'a' && (!e.target.classList.contains('navbar-brand'))) {
+        link_was_clicked = true;
+        }
+    else {
+        link_was_clicked = false;
+        };
+    }, true);
 
-window.onbeforeunload = function() {
-  if(link_was_clicked) {
-    link_was_clicked = false;
-    return;
-  }
-  if (confirm("You are leaving without checking out - your entries may be cancelled")) {
-    txt = "You pressed OK!";
-    } else {
-    txt = "You pressed Cancel!";
-}
-
-}
+window.onbeforeunload = function(){
+    if (!link_was_clicked) {
+        return 'Warning'; //Any text creates the same message.
+        };
+    };

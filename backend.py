@@ -191,9 +191,9 @@ def update_sheet(event, starts, courses, time, name, course, age_class, fee, dib
                                   if you do not checkout on this device in the next 30 minutes,
                                   the time may be released.</strong><p>"""
             return slot_available,"""Time {} successfully reserved for {}. {}
-                                    <p>Please <strong>note</strong> each participant - including shadowers must reserve a start time,
+                                    <p>Please <strong>note</strong> each participant - including shadowers - must reserve a start time,
                                     multiple runners will not be accepted on a single entry. <p><small>Shadowers or family groups can still start
-                                    at the same time on the day - but must reserve multiple slots for COVID compliance.</small></p>     """.format(time,name,payment_warning)
+                                    at the same time on the day - but must reserve multiple slots for COVID compliance.</small></p>""".format(time,name,payment_warning)
         i+=1
 
     #only reaches here is there are NO timeslots that match; this change enables more than one slot with same time.

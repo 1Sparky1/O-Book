@@ -14,6 +14,7 @@ import os
 from datetime import datetime
 import stripe
 
+
 stripe.api_key = ""
 
 SITEPATH = "/home/BenPolwart/O-Book/"
@@ -28,7 +29,6 @@ app = Flask(__name__,static_folder=".",
 app.config["DEBUG"] = False
 app.config["SECRET_KEY"] = secrets.token_urlsafe(256)
 
-checkout_warning =  ""
 help_title = "Why Do We Need This?"
 help_info = "We may need these details to contact you if the event is cancelled.  We MAY be required to share this information with Health Protection Scotland if someone at the event develops symptoms of a communicable disease."
 
@@ -39,9 +39,10 @@ club_list = [
 
 def checkout_required(session):
     script = ''
-    if 'running_total' in session and 'card_payments' in session:
-        #if session['running_total']>0 and session['card_payments']==True: script = '<script src="https://fvo.eu.pythonanywhere.com/checkout_warning.js"></script>'
-        pass
+    if 'running_total' in session and 'checkout' in session:
+        if not session['checkout']:
+            script = '<script src="https://benpolwart.pythonanywhere.com/checkout_warning.js"></script>'
+            pass
     return script
 
 
@@ -66,7 +67,8 @@ def home():
                                         heading='Local Orienteering Events - Select the event',
                                         footer=htmltemplates.navbar,
                                         info="Select the event you wish to register for.  The current list of entrants can be accessed from the menu at top of page",
-                                        dd_list=event_options, form_action="/orienteering/signup")
+                                        dd_list=event_options, form_action="/orienteering/signup",
+                                        script=script)
                                         )
 
 
@@ -131,11 +133,11 @@ def signup():
             if late_entries(event):
                 app.logger.info('...but late entries still open' )
                 if session['running_total'] > 0:
-                    modal = False
+                    modal = ""
                 else :
-                    modal = True
+                    modal = htmltemplates.covid_popup()
                 return htmltemplates.get_form(9, title='Limited maps remaining', modal=modal, heading='Limited Maps Remaining - Enter your details <p><small>Entry fees include a late entry premium</small></p><p>Every attendee must be registerred - if entering as a family select the shadowing option for the other family members.</p>', info=event_summary, footer=htmltemplates.navbar.format(session['file_name']),
-                                    submit_loc="/orienteering/signup").format(  name_section,
+                                    submit_loc="/orienteering/signup", add_script=script).format(  name_section,
                                                                                 htmltemplates.input_box_help('Email', 'Contact Email Address', help_title, help_info, valid='email', required='True'),
                                                                                 htmltemplates.input_box_help('Phone', 'Contact Phone Number', help_title, help_info, valid='tel', required='True'),
                                                                                 "<p><strong>Course Details:</strong><p>",
@@ -151,11 +153,11 @@ def signup():
 
         else:
             if session['running_total'] > 0:
-                modal = False
+                modal = ""
             else :
-                modal = True
+                modal = htmltemplates.covid_popup()
             return htmltemplates.get_form(11, title='Orienteering Signup - Enter', modal=modal, heading='<p>Enter your details</p><p style="color:red;"><small>Every attendee must be registerred separately - if entering as a family select the shadowing option for the other family members.</small></p>', info=event_summary, footer=htmltemplates.navbar.format(session['file_name']),
-                                    submit_loc="/orienteering/signup").format(  name_section,
+                                    submit_loc="/orienteering/signup", add_script=script).format(  name_section,
                                                                                 htmltemplates.input_box_help('Email', 'Contact Email Address', help_title, help_info, valid='email', required='True'),
                                                                                 htmltemplates.input_box_help('Phone', 'Contact Phone Number', help_title, help_info, valid='tel', required='True'),
                                                                                 htmltemplates.tick_to_open('FVO/SOA/BOF Member', 'member', htmltemplates.select_box_ls('Club', club_list, False, 'id="Club"')
@@ -179,8 +181,10 @@ def signup():
 
     if request.method == "POST":
         wb, event, fees, courses, start = load_sheets(session['file'])  # reload the workbook in case changed in the meantime
+        session['checkout']=False
         session["card_payments"]=False
         if card_payments(event) : session["card_payments"]=True
+        script = checkout_required(session)
         app.logger.info('Page running as POST; File: {} opened'.format(session['file']))
         name, email, phone, details, date, year, age, age_class, age_class_mod, fee, course, desc, start_time, dib, club = None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
         name = request.form["Name"]
@@ -247,11 +251,14 @@ def signup():
 
             if session:
                 if session['card_payments'] == True and session['running_total'] > 0:
+                    message = message + "Please add any other entrants, <strong>then</strong> pay for your order."
                     return (htmltemplates.success(title='Orienteering Signup - Success',
                                                 heading="Success! Don't forget to checkout",
                                                 footer=htmltemplates.navbar.format(session['file_name']), message=message, script=script)
-                        + htmltemplates.checkout_two_buttons(label2='Add Another Entrant',
-                                                ln2=('/orienteering/signup?type='+session['file_name'])
+                        + htmltemplates.checkout_three_buttons(label1='Add Another Entrant',
+                                                ln1=('/orienteering/signup?type='+session['file_name']),
+                                                label2='Enter Another Event',
+                                                ln2='/orienteering/signup'
                                                 ))
 
             return (htmltemplates.success(title='Orienteering Signup - Success', heading='Success!', footer=htmltemplates.navbar.format(session['file_name']), message=message, script=script)
@@ -265,15 +272,15 @@ def signup():
 
 @app.route('/orienteering/invoice', methods=["GET", "POST"])
 def invoice():
-    script = checkout_required(session)
-    payment_method = '''Print, take a screenshot of this page, on click <a href="/orienteering/email-invoice">here</a> to get an email list of your entries,
-                        you will be billed by the club for your entries from time to time.'''
     if 'all_entries' in session:
+        session['checkout'] = True
+        payment_method = '''Print, take a screenshot of this page, on click <a href="/orienteering/email-invoice">here</a> to get an email list of your entries,
+                            you will be billed by the club for your entries from time to time.'''
         if 'card_payments' in session and session['running_total'] > 0 :
             if session['card_payments'] == True:
-                #checkout_warning='<script src="https://fvo.eu.pythonanywhere.com/checkout_warning.js"></script>'
+                session['checkout'] = False
                 payment_method = '''You still need to pay for these entries via Stripe - click here to {} or cancel ALL above {}'''.format(htmltemplates.stripe_button,htmltemplates.clear_button)
-
+        script = checkout_required(session)
         return (htmltemplates.table(title='Orienteering Signup - Invoice', script=script,
                 footer=htmltemplates.navbar.format(session['file_name']),
                 pgheading='You Requested These Entries:',
@@ -288,21 +295,20 @@ def invoice():
 
     else:
         return (htmltemplates.error(title='Orienteering Signup - Invoice',
-            footer=htmltemplates.navbar.format(),
+            footer=htmltemplates.navbar.format(""),
             message='Your have no pending requests or your session has expired - if you are having problems please contact membership@fvo.org.uk'))
 
 
 @app.route('/orienteering/success', methods=["GET"])
 def success():
-    script = checkout_required(session)
     for entry in session['all_entries']:
         status = confirmed_paid(EVENTSPATH+entry['Event']+".xlsx",entry['Start Time'],entry['Name'], entry['Course'])
     session.clear()
     app.logger.info("Session cleared")
     app.logger.info(status)
     script = ""
-    if status : return htmltemplates.info(title='Sucess', heading='Payment Successful', footer=htmltemplates.navbar.format(checkout_warning), message='''Your entries were successful, and payment was received.  Please remember the organiser may adjust times.  If you are required to self isolate please do not attend the event - contact us to discuss a refund.''')
-    else: return htmltemplates.error(title='WARNING', heading='Your Payment was Successful but entry has a problem', footer=htmltemplates.navbar.format(checkout_warning), message='''Your entries were not saved properly but payment was received.  Please contact membership@fvo.org.uk for advice.''')
+    if status : return htmltemplates.info(title='Sucess', heading='Payment Successful', footer=htmltemplates.navbar.format(""), message='''Your entries were successful, and payment was received.  Please remember the organiser may adjust times.  If you are required to self isolate please do not attend the event - contact us to discuss a refund.''')
+    else: return htmltemplates.error(title='WARNING', heading='Your Payment was Successful but entry has a problem', footer=htmltemplates.navbar.format(""), message='''Your entries were not saved properly but payment was received.  Please contact membership@fvo.org.uk for advice.''')
 
 
 @app.route('/orienteering/clear', methods=["GET"])
@@ -310,7 +316,7 @@ def clear():
     for entry in session['all_entries']:
         cancel_entry(EVENTSPATH+entry['Event']+".xlsx",entry['Start Time'],entry['Name'], entry['Course'])
     session.clear()
-    return htmltemplates.warning(title='Sessions cleared', heading='ALL UNPAID ENTRIES CLEARED', footer=htmltemplates.navbar.format(checkout_warning), message='''Your unpaid entries booked on this device were cleared.''')
+    return htmltemplates.warning(title='Sessions cleared', heading='ALL UNPAID ENTRIES CLEARED', footer=htmltemplates.navbar.format(""), message='''Your unpaid entries booked on this device were cleared.''')
 
 @app.route('/orienteering/email-invoice', methods=["GET", "POST"])
 def email():
