@@ -86,8 +86,10 @@ def get_event_details(event):
     details["date_pretty"] = (event['B3'].value).strftime('%A %-d %B %Y')
     details["organiser"] = str(event ['B4'].value)
     details["org_email"] = str(event ['B5'].value)
-    details["closing"] = event['B6'].value
-    details["closing_pretty"] = (event['B6'].value).strftime('%-d %b %Y %-I:%M%p')
+    details["late"] = event['B6'].value
+    details["late_pretty"] = (event['B6'].value).strftime('%-d %b %Y %-I:%M%p')
+    details["closing"] = event['B11'].value
+    details["closing_pretty"] = (event['B11'].value).strftime('%-d %b %Y %-I:%M%p')
     if str(event ['B7'].value).upper()=="YES": details["hire_available"]=True
     if str(event ['B8'].value).upper()=="YES": details["members_only"]=True
     if str(event ['B9'].value).upper()=="YES": details["card_payments"]=True
@@ -100,8 +102,7 @@ def get_event_details(event):
 
 def late_entries(event):
     details = get_event_details(event)
-    cut_off = details["date"] + CUTOFF_OFFSET
-    if all([details["late_entries"],details["closing"]<datetime.now(),datetime.now()<cut_off]):
+    if all([details["late_entries"],details["late"]<datetime.now(),datetime.now()<details["closing"]]):
         logging.info("Late ents set to true")
         return True
     else:
@@ -132,7 +133,8 @@ def get_event_summary(event):
     details = get_event_details(event)
     return """  <strong>{name}</strong> on {date_pretty} <br>
                 being organised by {organiser}<br>
-                CLOSING DATE FOR ENTRIES:<br> {closing_pretty}<br>
+                GUARANTEED ENTRIES END:<br> {late_pretty}<br>
+                FINAL DATE FOR ENTRIES:<br> {closing_pretty}<br>
                 see <A Href={url}>{url}</A> for details<br>
             """.format(**details)
 
@@ -285,3 +287,17 @@ def get_age_class(age):
         age_class = 75
     if age_class > 0:
         return age_class
+
+def get_remaining_maps(courses, session):
+    open = False
+    msg = '<strong>Available Maps:</strong><br>'
+    for row in courses.iter_rows(min_row=2, max_col=3, values_only=True):
+        if row[0] and row[2]>0:
+            msg += '{name}: {number}<br>'.format(name=row[0], number=row[2])
+            open = True
+    return open, msg
+
+def check_covid_warning(event):
+    if str(event['B12'].value) == 'Yes':
+        return True
+    return False
