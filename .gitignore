@@ -1,0 +1,5 @@
+sendgrid.env
+**/*.xlsx
+**/*.lock
+__pycache__/
+**/*.pycsendgrid.env

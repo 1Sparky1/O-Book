@@ -1,0 +1,4 @@
+This folder contains the .xlsx files you wish to list as active.
+The name of the file (without the extension) is used as the descriptor in the
+dropdown list.  It is helpful to include the event date in the filename.
+If a event is no longer to be listed we recommend moving to /archive.
