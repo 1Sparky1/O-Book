@@ -17,7 +17,7 @@ import stripe
 
 stripe.api_key = ""
 
-SITEPATH = "/home/BenPolwart/O-Book/"
+SITEPATH = "/home/fvo/mysite/"
 EVENTSPATH = SITEPATH+"events/"
 MEMBERFILE = SITEPATH + "private/members.xlsx"
 YOUR_DOMAIN = 'http://fvo.eu.pythonanywhere.com'
@@ -41,7 +41,7 @@ def checkout_required(session):
     script = ''
     if 'running_total' in session and 'checkout' in session:
         if not session['checkout']:
-            script = '<script src="https://benpolwart.pythonanywhere.com/checkout_warning.js"></script>'
+            script = '<script src="https://fvo.eu.pythonanywhere.com/checkout_warning.js"></script>'
             pass
     return script
 
@@ -111,12 +111,19 @@ def signup():
                                         content=htmltemplates.input_box('Dibber', 'Dibber Number', valid='number', extra_params='min="1000" max="9999999" required') +
                                                 """<script>
                                                         function togglerqd() {
-                                                                if (document.getElementById("dib").checked == true){
-                                                                    document.getElementById("Dibber").removeAttribute("required");
-                                                                    } else {
-                                                                    document.getElementById("Dibber").setAttribute("required","");
-                                                                    }
-                                                                }
+                                                            if (document.getElementById("dib").checked == true || document.getElementById("sha").checked == true){
+                                                                document.getElementById("Dibber").removeAttribute("required");
+                                                            } else {
+                                                                document.getElementById("Dibber").setAttribute("required","");
+                                                            }
+                                                            if (document.getElementById("sha").checked == true){
+                                                                document.getElementById("Sex").removeAttribute("required");
+                                                                document.getElementById("YOB").removeAttribute("required");
+                                                            } else {
+                                                                document.getElementById("Sex").setAttribute("required","");
+                                                                document.getElementById("YOB").setAttribute("required","");
+                                                            }
+                                                        }
                                                     </script>""")
         else:
             dibber_section = htmltemplates.input_box('Dibber', 'Dibber Number', valid='number', required='True', extra_params='min="1000" max="9999999"')
@@ -164,8 +171,8 @@ def signup():
 
         else:
             app.logger.info('Normal entries open.')
-            return htmltemplates.get_form(11, title='Orienteering Signup - Enter', modal=modal, heading='<p>Enter your details</p><p style="color:red;"><small>Every attendee must be registerred separately - if entering as a family select the shadowing option for the other family members.</small></p>', info=event_summary, footer=htmltemplates.navbar.format(session['file_name']),
-                                    submit_loc="/orienteering/signup", add_script=script).format(  name_section,
+            return htmltemplates.get_form(10, title='Orienteering Signup - Enter', modal=modal, heading='<p>Enter your details</p><p style="color:red;"><small>Every attendee must be registerred separately - if entering as a family select the shadowing option for the other family members.</small></p>', info=event_summary, footer=htmltemplates.navbar.format(session['file_name']),
+                                    submit_loc="/orienteering/signup", add_script=script).format(name_section,
                                                                                 htmltemplates.input_box_help('Email', 'Contact Email Address', help_title, help_info, valid='email', required='True'),
                                                                                 htmltemplates.input_box_help('Phone', 'Contact Phone Number', help_title, help_info, valid='tel', required='True'),
                                                                                 htmltemplates.tick_to_open('FVO/SOA/BOF Member', 'member', htmltemplates.select_box_ls('Club', club_list, False, 'id="Club"')
@@ -179,12 +186,16 @@ def signup():
                                                                                     }
                                                                                     </script>""", 'data-toggle="collapse" data-target="#collapsemember" onclick="toggleclub()"'),
                                                                                 "<p><strong>Course Details:</strong><p>",
-                                                                                htmltemplates.select_box_ls('Sex', ['Male', 'Female'], required='True'),
-                                                                                htmltemplates.input_box('YOB', 'Year Of Birth', valid='number', required='True', extra_params='min="1900" max="2021"'),
-                                                                                htmltemplates.select_box_dict('Course', session['courses'], required='True'),
-                                                                                htmltemplates.select_box_ls('PREFERRED Start Time', session['starts'], required='True'),
+                                                                                htmltemplates.tick_to_close_multi(label="I am shadowing",
+                                                                                action = 'data-toggle="collapse" data-target=".multi-collapse" onclick="togglerqd()"',
+                                                                                id='sha',
+                                                                                content=htmltemplates.select_box_ls('Sex', ['Male', 'Female'], True, 'id="Sex"')
+                                                                                + htmltemplates.input_box('YOB', 'Year Of Birth', valid='number', required='True', extra_params='min="1900" max="2021"')
+                                                                                + dibber_section),
+                                                                                htmltemplates.collapse_box_closed_multi.format(id='sha2', content=htmltemplates.toggle_box.format(id='shamap', label='Shadow With Map?', action='')),
                                                                                 '<div></div>',
-                                                                                dibber_section)
+                                                                                htmltemplates.select_box_dict('Course', session['courses'], required='True'),
+                                                                                htmltemplates.select_box_ls('PREFERRED Start Time', session['starts'], required='True'))
 
 
     if request.method == "POST":
@@ -199,30 +210,44 @@ def signup():
         email = request.form["Email"]
         phone = request.form["Phone"]
         details = get_event_details(event)
-        date = details["date"]
-        year = date.year
-        age = year - int(request.form["YOB"])
-        if request.form["Sex"] == 'Male':
-            age_class = 'M{}'.format(get_age_class(age))
+        if request.form.get('sha') == None:
+            date = details["date"]
+            year = date.year
+            age = year - int(request.form["YOB"])
+            if request.form["Sex"] == 'Male':
+                age_class = 'M{}'.format(get_age_class(age))
+            else:
+                age_class = 'W{}'.format(get_age_class(age))
+            if request.form.get('member'):
+                age_class_mod = age_class + ' (FVO/SOA/BOF Member)'
+                club = request.form["Club"]
+            else:
+                age_class_mod = age_class + ' (Non-Member)'
+                club = 'Independant'
+            if request.form.get('dib') == None:
+                dib = request.form["Dibber"]
+            else:
+                dib = "HIRE"
         else:
-            age_class = 'W{}'.format(get_age_class(age))
-        if request.form.get('member'):
-            age_class_mod = age_class + ' (FVO/SOA/BOF Member)'
-            club = request.form["Club"]
-        else:
-            age_class_mod = age_class + ' (Non-Member)'
-        if not club:
-            club = 'Independant'
+            age_class = 'Shadowing'
+            if request.form.get('shamap') == None:
+                age_class_mod = age_class + ' (NO map)'
+            else:
+                age_class_mod = age_class + ' (WITH map)'
+            if request.form.get('member'):
+                club = request.form["Club"]
+            else:
+                club = 'Independant'
+            dib = 'N/A'
+        app.logger.info(age_class_mod)
+        app.logger.info(session)
+        app.logger.info(session['age_classes'])
         fee = session['age_classes'][age_class_mod]
         if late_entries(event) and fee > 0:
             fee += details['entry_premium']
         course = request.form["Course"]
         start_time = request.form["PREFERRED Start Time"]
-        dib = request.form.get('dib')
-        if dib == None:
-            dib = request.form["Dibber"]
-        else:
-            dib = "HIRE"
+
         app.logger.info('Data from form: {} opened'.format([name, email, phone, age_class, fee, course, start_time, dib]))
         result, message = update_sheet(event, start, courses, start_time, name, course, age_class_mod, fee, dib, phone, email, club)
         app.logger.info(message)
