@@ -13,14 +13,19 @@ import json
 import os
 from datetime import datetime
 import stripe
+from dotenv import load_dotenv
 
+# allows stripe key to be loaded from .env which is in git ignore.
+project_folder = os.path.expanduser('~/mysite')
+load_dotenv(os.path.join(project_folder, 'stripe.env'))
+stripe.api_key = os.environ.get('STRIPE_API_KEY')
 
-stripe.api_key = ""
-
-SITEPATH = "/home/BenPolwart/O-Book/"
+SITEPATH = project_folder+"/"
 EVENTSPATH = SITEPATH+"events/"
 MEMBERFILE = SITEPATH + "private/members.xlsx"
 YOUR_DOMAIN = 'http://fvo.eu.pythonanywhere.com'
+
+
 
 wb, start, start_times, age_classes, courses, starts = None, None, None, None, None, None
 
@@ -32,8 +37,9 @@ app.config["SECRET_KEY"] = secrets.token_urlsafe(256)
 help_title = "Why Do We Need This?"
 help_info = "We may need these details to contact you if the event is cancelled.  We MAY be required to share this information with Health Protection Scotland if someone at the event develops symptoms of a communicable disease."
 
-club_list = [
-            'FVO',
+club_list = ['FVO','AROS','AUOC','AYROC','BASOC','CLYDE','ECKO','ESOC','EUOC',
+            'GRAMP','INT','INVOC','KFO','MAROC','Masterplan','MOR','RR',
+            'SOLWAY','STAG','STUOC','TAY','TINTO','USOC',
             'Other'
             ]
 
@@ -144,7 +150,7 @@ def signup():
                                                                             name_section,
                                                                             htmltemplates.input_box_help('Email', 'Contact Email Address', help_title, help_info, valid='email', required='True'),
                                                                             htmltemplates.input_box_help('Phone', 'Contact Phone Number', help_title, help_info, valid='tel', required='True'),
-                                                                            htmltemplates.tick_to_open('FVO/SOA/BOF Member', 'member', htmltemplates.select_box_ls('Club', club_list, False, 'id="Club"')
+                                                                            htmltemplates.tick_to_open('Tick if a member of a Scottish or British Orienteering club', 'member', htmltemplates.select_box_ls('Club', club_list, False, 'id="Club"')
                                                                             +"""<script>
                                                                                 function toggleclub() {
                                                                                     if (document.getElementById("member").checked == true){
@@ -168,7 +174,7 @@ def signup():
                                     submit_loc="/orienteering/signup", add_script=script).format(  name_section,
                                                                                 htmltemplates.input_box_help('Email', 'Contact Email Address', help_title, help_info, valid='email', required='True'),
                                                                                 htmltemplates.input_box_help('Phone', 'Contact Phone Number', help_title, help_info, valid='tel', required='True'),
-                                                                                htmltemplates.tick_to_open('FVO/SOA/BOF Member', 'member', htmltemplates.select_box_ls('Club', club_list, False, 'id="Club"')
+                                                                                htmltemplates.tick_to_open('Tick if a member of a British/Scottish Orienteering (all FVO members should tick this)', 'member', htmltemplates.select_box_ls('Club', club_list, False, 'id="Club"')
                                                                                 +"""<script>
                                                                                     function toggleclub() {
                                                                                         if (document.getElementById("member").checked == true){
@@ -268,7 +274,7 @@ def signup():
                         + htmltemplates.checkout_three_buttons(label1='Add Another Entrant',
                                                 ln1=('/orienteering/signup?type='+session['file_name']),
                                                 label2='Enter Another Event',
-                                                ln2='/orienteering/signup'
+                                                ln2='/'
                                                 ))
 
             return (htmltemplates.success(title='Orienteering Signup - Success', heading='Success!', footer=htmltemplates.navbar.format(session['file_name']), message=message, script=script)

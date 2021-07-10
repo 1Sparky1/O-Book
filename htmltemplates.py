@@ -402,7 +402,7 @@ def checkout_three_buttons(heading="", label1="", ln1="#", label2="", ln2="#", f
     button1 = ln_button.format(label=label1, ln=ln1)
     button2 = ln_button.format(label=label2, ln=ln2)
     button3 = stripe_button
-    return basic_page.format(header=heading, content=button1+', '+button2+' Or '+button3, info="")
+    return basic_page.format(header=heading, content=button1+button2+button3, info="")
 
 
 def table(title="", pgheading="", data=[], headings=None, footer="", info="", script=""):

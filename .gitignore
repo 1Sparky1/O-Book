@@ -1,4 +1,8 @@
 sendgrid.env
+stripe.env
+**/*.zip
+events/archive/*
+events/pending/*
 **/*.xlsx
 **/*.lock
 __pycache__/
