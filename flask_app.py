@@ -47,7 +47,7 @@ def checkout_required(session):
     script = ''
     if 'running_total' in session and 'checkout' in session:
         if not session['checkout']:
-            script = '<script src="https://benpolwart.pythonanywhere.com/checkout_warning.js"></script>'
+            script = '<script src="{}/checkout_warning.js"></script>'.format(YOUR_DOMAIN)
             pass
     return script
 
@@ -141,7 +141,7 @@ def signup():
                                                                             name_section,
                                                                             htmltemplates.input_box_help('Email', 'Contact Email Address', help_title, help_info, valid='email', required='True'),
                                                                             htmltemplates.input_box_help('Phone', 'Contact Phone Number', help_title, help_info, valid='tel', required='True'),
-                                                                            htmltemplates.tick_to_open('Tick if a member of a British/Scottish Orienteering (all FVO members should tick this)', 'member', htmltemplates.select_box_ls('Club', club_list, False, 'id="Club"')
+                                                                            htmltemplates.tick_to_close('<strong>Untick this box if NOT a member</strong> of a British/Scottish Orienteering (all FVO members should tick this)', 'member', htmltemplates.select_box_ls('Club', club_list, True, 'id="Club"')
                                                                                 +"""<script>
                                                                                         function togglerqd() {
                                                                                             if (document.getElementById("dib").checked == true || document.getElementById("sha").checked == true){
@@ -162,9 +162,9 @@ def signup():
                                                                                                 document.getElementById("Club").removeAttribute("required");
                                                                                             }
                                                                                         }
-                                                                                    </script>""", 'data-toggle="collapse" data-target="#collapsemember" onclick="togglerqd()"'),
+                                                                                    </script>""", 'data-toggle="collapse" data-target="#collapsemember" onclick="togglerqd()" checked'),
                                                                                 "<p><strong>Course Details:</strong><p>",
-                                                                                htmltemplates.tick_to_close_multi(label="I am shadowing",
+                                                                                htmltemplates.tick_to_close_multi(label="This participant is shadowing",
                                                                                 action = 'data-toggle="collapse" data-target=".multi-collapse" onclick="togglerqd()"',
                                                                                 id='sha',
                                                                                 content=htmltemplates.select_box_ls('Sex', ['Male', 'Female'], True, 'id="Sex"')
@@ -181,7 +181,7 @@ def signup():
                                     submit_loc="/orienteering/signup", add_script=script).format(name_section,
                                                                                 htmltemplates.input_box_help('Email', 'Contact Email Address', help_title, help_info, valid='email', required='True'),
                                                                                 htmltemplates.input_box_help('Phone', 'Contact Phone Number', help_title, help_info, valid='tel', required='True'),
-                                                                                htmltemplates.tick_to_open('Tick if a member of a British/Scottish Orienteering (all FVO members should tick this)', 'member', htmltemplates.select_box_ls('Club', club_list, False, 'id="Club"')
+                                                                                htmltemplates.tick_to_close('<strong>Untick this box if NOT a member</strong> of a British/Scottish Orienteering (all FVO members should tick this)', 'member', htmltemplates.select_box_ls('Club', club_list, True, 'id="Club"')
                                                                                 +"""<script>
                                                                                         function togglerqd() {
                                                                                             if (document.getElementById("dib").checked == true || document.getElementById("sha").checked == true){
@@ -202,9 +202,9 @@ def signup():
                                                                                                 document.getElementById("Club").removeAttribute("required");
                                                                                             }
                                                                                         }
-                                                                                    </script>""", 'data-toggle="collapse" data-target="#collapsemember" onclick="togglerqd()"'),
+                                                                                    </script>""", 'data-toggle="collapse" data-target="#collapsemember" onclick="togglerqd()" checked'),
                                                                                 "<p><strong>Course Details:</strong><p>",
-                                                                                htmltemplates.tick_to_close_multi(label="I am shadowing",
+                                                                                htmltemplates.tick_to_close_multi(label="This partipant is shadowing",
                                                                                 action = 'data-toggle="collapse" data-target=".multi-collapse" onclick="togglerqd()"',
                                                                                 id='sha',
                                                                                 content=htmltemplates.select_box_ls('Sex', ['Male', 'Female'], True, 'id="Sex"')
