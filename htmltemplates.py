@@ -142,6 +142,16 @@ collapse_box_open = '''
                     {content}
                 </div>'''
 
+collapse_box_closed_multi = '''
+                <div class="multi-collapse collapse" id="collapse{id}">
+                    {content}
+                </div>'''
+
+collapse_box_open_multi = '''
+                <div class="multi-collapse collapse show" id="collapse{id}">
+                    {content}
+                </div>'''
+
 success_box = '''
             <div class="alert alert-success" role="alert">
                 {message}
@@ -350,6 +360,11 @@ def select_box_dict(name="", dict={0:0}, required=False, extra_params=""):
                                         extra_params=extra_params)
 
 def tick_to_close(label="", id="", content="", action="", toggle_box=toggle_box, collapse_box=collapse_box_open):
+    box = toggle_box.format(label=label, action=action, id=id)
+    hidden = collapse_box.format(id=id, content=content)
+    return box + '<div></div><br>' + hidden
+
+def tick_to_close_multi(label="", id="", content="", action="", toggle_box=toggle_box, collapse_box=collapse_box_open_multi):
     box = toggle_box.format(label=label, action=action, id=id)
     hidden = collapse_box.format(id=id, content=content)
     return box + '<div></div><br>' + hidden
