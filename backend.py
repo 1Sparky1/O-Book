@@ -279,14 +279,13 @@ def get_age_class(age):
         age_class = 10
     elif age <= 18:
         age_class = math.ceil(age/2) * 2
-    elif age <= 29:
+    elif age <= 34:
         age_class = 21
     elif age <= 79:
         age_class = math.floor(age/5) * 5
     else:
         age_class = 75
-    if age_class > 0:
-        return age_class
+    return age_class
 
 def get_remaining_maps(courses, session):
     open = False

@@ -81,7 +81,7 @@ basic_page = '''
 
 dropdown = '''<div class="container">
                 <script> $("[data-toggle=dropdown]").dropdown() </script>
-                <div class="dropdown">
+                <div class="dropdown dropright">
                         <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                             Choose Event...
                         </button>
