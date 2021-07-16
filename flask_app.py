@@ -259,8 +259,6 @@ def signup():
                 club = 'Independant'
             dib = 'N/A'
         fee = session['age_classes'][age_class_mod]
-        if late_entries(event) and fee > 0:
-            fee += details['entry_premium']
         course = request.form["Course"]
         start_time = request.form["PREFERRED Start Time"]
         app.logger.info('Data from form: {} opened'.format([name, email, phone, age_class, fee, course, start_time, dib]))
