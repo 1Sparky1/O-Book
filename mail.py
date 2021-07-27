@@ -16,6 +16,7 @@ from sendgrid.helpers.mail import (
     FileType, Disposition, ContentId)
 from sendgrid import SendGridAPIClient
 from dotenv import load_dotenv
+import config_setup as config
 
 project_folder = os.path.expanduser('~/mysite')
 load_dotenv(os.path.join(project_folder, 'sendgrid.env'))
@@ -26,7 +27,7 @@ def with_attachment(to="", subject="Missing Subject Line", content="<strong>HTML
     '''
     path, filename = os.path.split(file_path)
     message = Mail(
-        from_email='membership@fvo.org.uk',
+        from_email=config.lookup('EMAIL'),
         to_emails=to,
         subject=subject,
         html_content=content)
@@ -52,7 +53,7 @@ def with_attachment(to="", subject="Missing Subject Line", content="<strong>HTML
 
 def simple_message(to="", subject="Missing Subject Line", content="<strong>HTML content missing</strong>"):
     message = Mail(
-            from_email='membership@fvo.org.uk',
+            from_email=config.lookup('EMAIL'),
             to_emails=to,
             subject=subject,
             html_content=content)

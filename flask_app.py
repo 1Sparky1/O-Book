@@ -8,12 +8,13 @@ from backend import *
 import glob
 import secrets
 import collections
-import fvomail
+import mail
 import json
 import os
 from datetime import datetime
 import stripe
 from dotenv import load_dotenv
+import config_setup as config
 
 # allows stripe key to be loaded from .env which is in git ignore.
 project_folder = os.path.expanduser('~/mysite')
@@ -23,7 +24,7 @@ stripe.api_key = os.environ.get('STRIPE_API_KEY')
 SITEPATH = project_folder+"/"
 EVENTSPATH = SITEPATH+"events/"
 MEMBERFILE = SITEPATH + "private/members.xlsx"
-YOUR_DOMAIN = 'http://fvo.eu.pythonanywhere.com'
+YOUR_DOMAIN = config.lookup('DOMAIN')
 
 
 
@@ -141,7 +142,7 @@ def signup():
                                                                             name_section,
                                                                             htmltemplates.input_box_help('Email', 'Contact Email Address', help_title, help_info, valid='email', required='True'),
                                                                             htmltemplates.input_box_help('Phone', 'Contact Phone Number', help_title, help_info, valid='tel', required='True'),
-                                                                            htmltemplates.tick_to_close('<strong>Untick this box if NOT a member</strong> of a British/Scottish Orienteering (all FVO members should tick this)', 'member', htmltemplates.select_box_ls('Club', club_list, True, 'id="Club"')
+                                                                            htmltemplates.tick_to_close('<strong>Untick this box if NOT a member</strong> of a British/Scottish Orienteering (all {} members should tick this)'.format(config.lookup('CLUB')), 'member', htmltemplates.select_box_ls('Club', club_list, True, 'id="Club"')
                                                                                 +"""<script>
                                                                                         function togglerqd() {
                                                                                             if (document.getElementById("dib").checked == true || document.getElementById("sha").checked == true){
@@ -181,7 +182,7 @@ def signup():
                                     submit_loc="/orienteering/signup", add_script=script).format(name_section,
                                                                                 htmltemplates.input_box_help('Email', 'Contact Email Address', help_title, help_info, valid='email', required='True'),
                                                                                 htmltemplates.input_box_help('Phone', 'Contact Phone Number', help_title, help_info, valid='tel', required='True'),
-                                                                                htmltemplates.tick_to_close('<strong>Untick this box if NOT a member</strong> of a British/Scottish Orienteering (all FVO members should tick this)', 'member', htmltemplates.select_box_ls('Club', club_list, True, 'id="Club"')
+                                                                                htmltemplates.tick_to_close('<strong>Untick this box if NOT a member</strong> of a British/Scottish Orienteering (all {} members should tick this)'.format(config.lookup('CLUB')), 'member', htmltemplates.select_box_ls('Club', club_list, True, 'id="Club"')
                                                                                 +"""<script>
                                                                                         function togglerqd() {
                                                                                             if (document.getElementById("dib").checked == true || document.getElementById("sha").checked == true){
@@ -238,7 +239,7 @@ def signup():
             else:
                 age_class = 'W{}'.format(get_age_class(age))
             if request.form.get('member'):
-                age_class_mod = age_class + ' (FVO/SOA/BOF Member)'
+                age_class_mod = age_class + ' (SOA/BOF Member)'
                 club = request.form["Club"]
             else:
                 age_class_mod = age_class + ' (Non-Member)'
@@ -281,8 +282,8 @@ def signup():
 
             temp = [this_entry]
             session['all_entries'] += temp
-            result = fvomail.simple_message(
-                            to=email, subject='FVO Event entry',
+            result = mail.simple_message(
+                            to=email, subject='{} Event entry'.format(config.lookup('CLUB')),
                             content=(htmltemplates.table(title='Orienteering Signup - Invoice',
                                         footer="",
                                         pgheading='You Made This Entry - UNCONFIRMED:',
@@ -291,7 +292,7 @@ def signup():
                                                 The event organiser will confirm start times after the closing date.
                                                 Please ensure you follow the <a href='https://bof2.sharepoint.com/:b:/g/Competitions/EfX0-LmKllFDiR_DAzbLLhEB7CdDSNDQvXfky33Tk4U5Zw?e=xRd4NC'>British Orienteering Covid Code of Conduct.</a>
                                                 <p>You can checkout on the same device you reserved the times on here (link may not work after a period of time):
-                                                    <A Href=https://fvo.eu.pythonanywhere.com/orienteering/invoice>https://fvo.eu.pythonanywhere.com/orienteering/invoice</a></p> """,
+                                                    <A Href={domain}/orienteering/invoice>{domain}/orienteering/invoice</a></p> """.format(domain=config.lookup('DOMAIN')),
                                         data=temp,
                                         headings=['Name', 'Start Time', 'Course', 'Age Class', 'Cost', 'Dibber No.', 'Phone', 'Email', 'Event'])
 
@@ -344,7 +345,7 @@ def invoice():
     else:
         return (htmltemplates.error(title='Orienteering Signup - Invoice',
             footer=htmltemplates.navbar.format(""),
-            message='Your have no pending requests or your session has expired - if you are having problems please contact membership@fvo.org.uk'))
+            message='Your have no pending requests or your session has expired - if you are having problems please contact {}'.format(config.lookup('EMAIL'))))
 
 
 @app.route('/orienteering/success', methods=["GET"])
@@ -356,7 +357,7 @@ def success():
     app.logger.info(status)
     script = ""
     if status : return htmltemplates.info(title='Sucess', heading='Payment Successful', footer=htmltemplates.navbar.format(""), message='''Your entries were successful, and payment was received.  Please remember the organiser may adjust times.  If you are required to self isolate please do not attend the event - contact us to discuss a refund.''')
-    else: return htmltemplates.error(title='WARNING', heading='Your Payment was Successful but entry has a problem', footer=htmltemplates.navbar.format(""), message='''Your entries were not saved properly but payment was received.  Please contact membership@fvo.org.uk for advice.''')
+    else: return htmltemplates.error(title='WARNING', heading='Your Payment was Successful but entry has a problem', footer=htmltemplates.navbar.format(""), message='''Your entries were not saved properly but payment was received.  Please contact {} for advice.'''.format(config.lookup('EMAIL')))
 
 
 @app.route('/orienteering/clear', methods=["GET"])
@@ -369,8 +370,8 @@ def clear():
 @app.route('/orienteering/email-invoice', methods=["GET", "POST"])
 def email():
     script = checkout_required(session)
-    result = fvomail.simple_message(
-                            to=session['all_entries'][0]['Email'], subject='FVO Event entry',
+    result = mail.simple_message(
+                            to=session['all_entries'][0]['Email'], subject='{} Event entry'.format(config.lookup('CLUB')),
                             content=(htmltemplates.table(title='Orienteering Signup - Invoice',
                                         footer="",
                                         pgheading='You Made These Entries:',
@@ -420,9 +421,9 @@ def admin():
         return htmltemplates.get_dropdown(title='Orienteering Signup - View Entries', heading=msg, dd_list=event_options, form_action="/orienteering/admin")
 
     details = get_event_details(event)
-    result = fvomail.with_attachment(
+    result = mail.with_attachment(
                             to=details['org_email'],
-                            subject='FVO Event entry file',
+                            subject='{} Event entry file'.format(config.lookup('CLUB')),
                             content="The file you requested is attached",
                             file_path=session['file'],
                             file_type="application/vnd.ms-excel")

@@ -1,0 +1,6 @@
+###CONFIG SETUP###
+
+CLUB = FVO # Name of the club
+EMAIL = membership@fvo.org.uk # Email that invoices/receipts should be sent from.
+DOMAIN = https://fvo.eu.pythonanywhere.com # URL of the ENTRIES website
+CLUB_SITE = https://www.fvo.org.uk # URL of the CLUB website
