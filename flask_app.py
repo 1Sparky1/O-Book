@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 import config_setup as config
 
 # allows stripe key to be loaded from .env which is in git ignore.
-project_folder = os.path.expanduser('~/mysite')
+project_folder = os.path.expanduser('~/mysite/O-Book')
 load_dotenv(os.path.join(project_folder, 'stripe.env'))
 stripe.api_key = os.environ.get('STRIPE_API_KEY')
 
