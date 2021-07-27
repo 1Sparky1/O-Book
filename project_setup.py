@@ -127,7 +127,7 @@ if os.path.isfile(project+'/Entries_Privacy_Notice.html'):
     print('Privacy Notice already exists, skipping...')
 else:
     try:
-        p = open('Entires_Privacy_Notice.html', 'w')
+        p = open('Entries_Privacy_Notice.html', 'w')
         p.write(html)
         p.close()
     except:
@@ -161,7 +161,7 @@ else:
 
 for module in modules:
     try:
-        os.system('pip3.6 install --user {}'.format(module))
+        os.system('pip3.9 install --user {}'.format(module))
     except OSError:
         print('Failed to install module {}.'.format(module))
     else:
