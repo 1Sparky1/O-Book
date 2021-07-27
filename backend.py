@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from filelock import FileLock
 import logging
 import math
+import config_setup as config
 
 CUTOFF_OFFSET = timedelta(days=-1, hours=+18) #6pm on day before event
 
@@ -138,11 +139,6 @@ def get_event_summary(event):
                 see <A Href={url}>{url}</A> for details<br>
             """.format(**details)
 
-    course = {}
-    for row in courses.iter_rows(min_row=1, max_col=2, values_only=True):
-        course[row[0]] = row[1]
-    return course
-
 def read_time(starts):
     ''' Reads the start times from the Workbook and assigns anyone currently booked for that time '''
     time = {}
@@ -160,8 +156,8 @@ def update_sheet(event, starts, courses, time, name, course, age_class, fee, dib
         if row[1]: #only consider rows with a name in the entry list, avoids an error as None.Upper() invalid
             if (row[1].upper() == name.upper() and row[3]== age_class) or (row[5] == dibber and dibber!="HIRE" and dibber!= "N/A"):
                 return False,'''This person appears to already have an entry, please <a href="javascript:history.back()">go back</a>
-                        and enter a new person; make sure you are using the correct SI dibber number. You can check if you have already entered with the Entry List link at the top. If you are sure this is not a duplicate contact membership@fvo.org.uk.
-                        If you have finished entering people <a href="/orienteering/invoice">go to your</a> invoice to finish.'''
+                        and enter a new person; make sure you are using the correct SI dibber number. You can check if you have already entered with the Entry List link at the top. If you are sure this is not a duplicate contact {}.
+                        If you have finished entering people <a href="/orienteering/invoice">go to your</a> invoice to finish.'''.format(config.lookup('EMAIL'))
     i=2
     for row in starts.iter_rows(min_row=2, max_col=9, values_only=True):
         if row[0] and row[0].strftime("%H:%M") == time and not row[1] :

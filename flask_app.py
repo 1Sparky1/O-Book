@@ -8,22 +8,23 @@ from backend import *
 import glob
 import secrets
 import collections
-import fvomail
+import mail
 import json
 import os
 from datetime import datetime
 import stripe
 from dotenv import load_dotenv
+import config_setup as config
 
 # allows stripe key to be loaded from .env which is in git ignore.
-project_folder = os.path.expanduser('~/mysite')
+project_folder = os.path.expanduser('~/mysite/O-Book')
 load_dotenv(os.path.join(project_folder, 'stripe.env'))
 stripe.api_key = os.environ.get('STRIPE_API_KEY')
 
 SITEPATH = project_folder+"/"
 EVENTSPATH = SITEPATH+"events/"
 MEMBERFILE = SITEPATH + "private/members.xlsx"
-YOUR_DOMAIN = 'http://fvo.eu.pythonanywhere.com'
+YOUR_DOMAIN = config.lookup('DOMAIN')
 
 
 
@@ -133,55 +134,23 @@ def signup():
         if event_closed(event) or not maps_left:
             app.logger.info('Event closing date passed.')
             return htmltemplates.warning(title='Orienteering Signup - Enter', script=script, heading='This event is now closed', message=event_summary, footer=htmltemplates.navbar.format(session['file_name']))
-
+        
         elif late_entries(event):
+            title = 'Limited maps remaining'
+            heading = 'Limited Maps Remaining - Enter your details <p><small>Entry fees include a late entry premium</small></p><p>Every attendee must be registerred - if entering as a family select the shadowing option for the other family members.</p>'
+            first_section = htmltemplates.warning_box.format(message=maps_message) + name_selection
             app.logger.info('Late entries open.')
-            return htmltemplates.get_form(11, title='Limited maps remaining', modal=modal, heading='Limited Maps Remaining - Enter your details <p><small>Entry fees include a late entry premium</small></p><p>Every attendee must be registerred - if entering as a family select the shadowing option for the other family members.</p>', info=event_summary, footer=htmltemplates.navbar.format(session['file_name']),
-                                submit_loc="/orienteering/signup", add_script=script).format(htmltemplates.warning_box.format(message=maps_message),
-                                                                            name_section,
-                                                                            htmltemplates.input_box_help('Email', 'Contact Email Address', help_title, help_info, valid='email', required='True'),
-                                                                            htmltemplates.input_box_help('Phone', 'Contact Phone Number', help_title, help_info, valid='tel', required='True'),
-                                                                            htmltemplates.tick_to_close('<strong>Untick this box if NOT a member</strong> of a British/Scottish Orienteering (all FVO members should tick this)', 'member', htmltemplates.select_box_ls('Club', club_list, True, 'id="Club"')
-                                                                                +"""<script>
-                                                                                        function togglerqd() {
-                                                                                            if (document.getElementById("dib").checked == true || document.getElementById("sha").checked == true){
-                                                                                                document.getElementById("Dibber").removeAttribute("required");
-                                                                                            } else {
-                                                                                                document.getElementById("Dibber").setAttribute("required","");
-                                                                                            }
-                                                                                            if (document.getElementById("sha").checked == true){
-                                                                                                document.getElementById("Sex").removeAttribute("required");
-                                                                                                document.getElementById("YOB").removeAttribute("required");
-                                                                                            } else {
-                                                                                                document.getElementById("Sex").setAttribute("required","");
-                                                                                                document.getElementById("YOB").setAttribute("required","");
-                                                                                            }
-                                                                                            if (document.getElementById("member").checked == true){
-                                                                                                document.getElementById("Club").setAttribute("required","");
-                                                                                            } else {
-                                                                                                document.getElementById("Club").removeAttribute("required");
-                                                                                            }
-                                                                                        }
-                                                                                    </script>""", 'data-toggle="collapse" data-target="#collapsemember" onclick="togglerqd()" checked'),
-                                                                                "<p><strong>Course Details:</strong><p>",
-                                                                                htmltemplates.tick_to_close_multi(label="This participant is shadowing",
-                                                                                action = 'data-toggle="collapse" data-target=".multi-collapse" onclick="togglerqd()"',
-                                                                                id='sha',
-                                                                                content=htmltemplates.select_box_ls('Sex', ['Male', 'Female'], True, 'id="Sex"')
-                                                                                + htmltemplates.input_box('YOB', 'Year Of Birth', valid='number', required='True', extra_params='min="1900" max="2021"')
-                                                                                + dibber_section),
-                                                                                htmltemplates.collapse_box_closed_multi.format(id='sha2', content=htmltemplates.toggle_box.format(id='shamap', label='Shadow With Map?', action='')),
-                                                                                '<div></div>',
-                                                                                htmltemplates.select_box_dict('Course', session['courses'], required='True'),
-                                                                                htmltemplates.select_box_ls('PREFERRED Start Time', session['starts'], required='True'))
-
         else:
+            title = 'Orienteering Signup - Enter'
+            heading = '<p>Enter your details</p><p style="color:red;"><small>Every attendee must be registerred separately - if entering as a family select the shadowing option for the other family members.</small></p>'
+            first_section = name_selection
             app.logger.info('Normal entries open.')
-            return htmltemplates.get_form(10, title='Orienteering Signup - Enter', modal=modal, heading='<p>Enter your details</p><p style="color:red;"><small>Every attendee must be registerred separately - if entering as a family select the shadowing option for the other family members.</small></p>', info=event_summary, footer=htmltemplates.navbar.format(session['file_name']),
-                                    submit_loc="/orienteering/signup", add_script=script).format(name_section,
+            
+        return htmltemplates.get_form(10, title=title, modal=modal, heading=heading, info=event_summary, footer=htmltemplates.navbar.format(session['file_name']),
+                                    submit_loc="/orienteering/signup", add_script=script).format(first_section,
                                                                                 htmltemplates.input_box_help('Email', 'Contact Email Address', help_title, help_info, valid='email', required='True'),
                                                                                 htmltemplates.input_box_help('Phone', 'Contact Phone Number', help_title, help_info, valid='tel', required='True'),
-                                                                                htmltemplates.tick_to_close('<strong>Untick this box if NOT a member</strong> of a British/Scottish Orienteering (all FVO members should tick this)', 'member', htmltemplates.select_box_ls('Club', club_list, True, 'id="Club"')
+                                                                                htmltemplates.tick_to_close('<strong>Untick this box if NOT a member</strong> of a British/Scottish Orienteering (all {} members should tick this)'.format(config.lookup('CLUB')), 'member', htmltemplates.select_box_ls('Club', club_list, True, 'id="Club"')
                                                                                 +"""<script>
                                                                                         function togglerqd() {
                                                                                             if (document.getElementById("dib").checked == true || document.getElementById("sha").checked == true){
@@ -238,7 +207,7 @@ def signup():
             else:
                 age_class = 'W{}'.format(get_age_class(age))
             if request.form.get('member'):
-                age_class_mod = age_class + ' (FVO/SOA/BOF Member)'
+                age_class_mod = age_class + ' (SOA/BOF Member)'
                 club = request.form["Club"]
             else:
                 age_class_mod = age_class + ' (Non-Member)'
@@ -281,8 +250,8 @@ def signup():
 
             temp = [this_entry]
             session['all_entries'] += temp
-            result = fvomail.simple_message(
-                            to=email, subject='FVO Event entry',
+            result = mail.simple_message(
+                            to=email, subject='{} Event entry'.format(config.lookup('CLUB')),
                             content=(htmltemplates.table(title='Orienteering Signup - Invoice',
                                         footer="",
                                         pgheading='You Made This Entry - UNCONFIRMED:',
@@ -291,7 +260,7 @@ def signup():
                                                 The event organiser will confirm start times after the closing date.
                                                 Please ensure you follow the <a href='https://bof2.sharepoint.com/:b:/g/Competitions/EfX0-LmKllFDiR_DAzbLLhEB7CdDSNDQvXfky33Tk4U5Zw?e=xRd4NC'>British Orienteering Covid Code of Conduct.</a>
                                                 <p>You can checkout on the same device you reserved the times on here (link may not work after a period of time):
-                                                    <A Href=https://fvo.eu.pythonanywhere.com/orienteering/invoice>https://fvo.eu.pythonanywhere.com/orienteering/invoice</a></p> """,
+                                                    <A Href={domain}/orienteering/invoice>{domain}/orienteering/invoice</a></p> """.format(domain=config.lookup('DOMAIN')),
                                         data=temp,
                                         headings=['Name', 'Start Time', 'Course', 'Age Class', 'Cost', 'Dibber No.', 'Phone', 'Email', 'Event'])
 
@@ -344,7 +313,7 @@ def invoice():
     else:
         return (htmltemplates.error(title='Orienteering Signup - Invoice',
             footer=htmltemplates.navbar.format(""),
-            message='Your have no pending requests or your session has expired - if you are having problems please contact membership@fvo.org.uk'))
+            message='Your have no pending requests or your session has expired - if you are having problems please contact {}'.format(config.lookup('EMAIL'))))
 
 
 @app.route('/orienteering/success', methods=["GET"])
@@ -356,7 +325,7 @@ def success():
     app.logger.info(status)
     script = ""
     if status : return htmltemplates.info(title='Sucess', heading='Payment Successful', footer=htmltemplates.navbar.format(""), message='''Your entries were successful, and payment was received.  Please remember the organiser may adjust times.  If you are required to self isolate please do not attend the event - contact us to discuss a refund.''')
-    else: return htmltemplates.error(title='WARNING', heading='Your Payment was Successful but entry has a problem', footer=htmltemplates.navbar.format(""), message='''Your entries were not saved properly but payment was received.  Please contact membership@fvo.org.uk for advice.''')
+    else: return htmltemplates.error(title='WARNING', heading='Your Payment was Successful but entry has a problem', footer=htmltemplates.navbar.format(""), message='''Your entries were not saved properly but payment was received.  Please contact {} for advice.'''.format(config.lookup('EMAIL')))
 
 
 @app.route('/orienteering/clear', methods=["GET"])
@@ -369,8 +338,8 @@ def clear():
 @app.route('/orienteering/email-invoice', methods=["GET", "POST"])
 def email():
     script = checkout_required(session)
-    result = fvomail.simple_message(
-                            to=session['all_entries'][0]['Email'], subject='FVO Event entry',
+    result = mail.simple_message(
+                            to=session['all_entries'][0]['Email'], subject='{} Event entry'.format(config.lookup('CLUB')),
                             content=(htmltemplates.table(title='Orienteering Signup - Invoice',
                                         footer="",
                                         pgheading='You Made These Entries:',
@@ -420,9 +389,9 @@ def admin():
         return htmltemplates.get_dropdown(title='Orienteering Signup - View Entries', heading=msg, dd_list=event_options, form_action="/orienteering/admin")
 
     details = get_event_details(event)
-    result = fvomail.with_attachment(
+    result = mail.with_attachment(
                             to=details['org_email'],
-                            subject='FVO Event entry file',
+                            subject='{} Event entry file'.format(config.lookup('CLUB')),
                             content="The file you requested is attached",
                             file_path=session['file'],
                             file_type="application/vnd.ms-excel")

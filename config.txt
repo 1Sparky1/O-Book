@@ -1,0 +1,8 @@
+###CONFIG SETUP###
+
+NAME = name # Full name of the club.
+CLUB = club # Short name of the club.
+EMAIL = email # Email that invoices/receipts should be sent from.
+DOMAIN = domain # URL of the ENTRIES website.
+CLUB_SITE = site # URL of the CLUB website.
+PRIVACY_NOTICE = notice # URL of the club's privacy notice.

@@ -1,3 +1,5 @@
+import config_setup as config
+
 html_skeleton = '''
             <html>
                 <head>
@@ -176,7 +178,7 @@ ln_button = '''
             <a role="button" class="btn btn-success" href="{ln}">{label}</a>'''
 
 clear_button = '''
-            <a role="button" class="btn btn-danger" href="https://fvo.eu.pythonanywhere.com/orienteering/clear">Cancel Unpaid Entries</a>'''
+            <a role="button" class="btn btn-danger" href="{}/orienteering/clear">Cancel Unpaid Entries</a>'''.format(config.lookup('DOMAIN'))
 
 stripe_button = """
     <button type="button" class="btn btn-primary" id="checkout-button">Checkout</button>"""+stripe_script
@@ -209,7 +211,7 @@ navbar = '''
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarToggler">
-            <a class="navbar-brand" href="https://www.fvo.org.uk">FVO Website</a>
+            <a class="navbar-brand" href="{site}">{name} Website</a>
             <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
               <li class="nav-item active">
                 <a class="nav-link" href="/">Enter event <span class="sr-only">(current)</span></a>
@@ -224,12 +226,12 @@ navbar = '''
                 <a class="nav-link" href="/orienteering/invoice">Review pending bookings</a>
               </li>
               <li class="nav-item active">
-                <a class="nav-link" href="/FVO_FAQs.pdf">FAQs</a>
+                <a class="nav-link" href="/FAQs.pdf">FAQs</a>
               </li>
             </ul>
         </div>
     </nav>
-    '''
+    '''.format(site=config.lookup('CLUB_SITE'),name=config.lookup('CLUB'))
 
 covid_modal = '''   <div class="container">
 
@@ -332,7 +334,6 @@ def get_form(size=0, title="", heading="", basic_page=basic_page, html_head=html
         content=modal+fields
     else:
         script = add_script
-        #script='<script src="https://fvo.eu.pythonanywhere.com/checkout_warning.js"></script>'
         content=fields
     head = html_head_custom_script.format(title=title,script=script)
     page = basic_page.format(header=heading, info=info_box.format(message=info), content=content)
