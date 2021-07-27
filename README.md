@@ -32,11 +32,11 @@
 > - From the web app page, scroll down to the 'Code' section, and click on the 'WSGI configuration file'.
 > - Add this code the the page, underneath 'import sys'
 > ```
->	import os
->	import time
+> import os
+> import time
 >
->	os.environ["TZ"] = "Europe/London"
->	time.tzset()
+> os.environ["TZ"] = "Europe/London"
+> time.tzset()
 > ```
 > **NOTE: Replace 'Europe/London' with your appropriate contient/city if you aren't using**
 > **GMT/BST time.**
