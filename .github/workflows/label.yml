@@ -9,7 +9,7 @@ name: Labeler
 on: [pull_request]
 
 jobs:
-  documentation: any: ['*/README.md', '*/*/README.md']
+  Documentation: README.md
   
   runs-on: ubuntu-latest
   steps:
