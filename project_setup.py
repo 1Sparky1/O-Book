@@ -14,7 +14,7 @@ skeleton = [project+'/events/archive',
             project+'/events/pending',
             project+'/private']
 
-modules = ['sendgrid', 'dotenv']
+modules = ['sendgrid', 'python-dotenv']
 
 html = '''<html>
             <head>
