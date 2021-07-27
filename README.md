@@ -86,7 +86,10 @@
 > Assuming you get no errors, everything is now set up correctly.
 > - Use the burger menu (three bars in the top right) to select 'Consoles'.
 > - Click the X next to 'Bash console \******'.
->
+> 
+> **NOTE: There may be large amounts of red or gold text when running the setup script. This is fine,**
+> **just let it run all the way through**
+> 
 > <br>
 
 ### Adding the .env files
