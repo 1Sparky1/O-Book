@@ -38,6 +38,8 @@
 > os.environ["TZ"] = "Europe/London"
 > time.tzset()
 > ```
+> - Click the 'Save' button in the top right.
+> 
 > **NOTE: Replace 'Europe/London' with your appropriate contient/city if you aren't using**
 > **GMT/BST time.**
 >
@@ -52,11 +54,7 @@
 > - Click 'Open Bash console here' above the file list.
 > - Enter this into the console
 > ```
->	git clone https://github.com/1Sparky1/O-Book
-> ```
-> - Now enter
-> ```
->	cd O-Book
+> git clone https://github.com/1Sparky1/O-Book
 > ```
 > Assuming you get no errors, everything is now set up correctly.
 > - Use the burger menu (three bars in the top right) to select 'Consoles'.
@@ -71,7 +69,7 @@
 > - Click on the 'Files' tab again.
 > - Select 'mysite/' from the directory list, then 'O-Book/'.
 > - Open 'config.txt' in the file list.
-> - Change the options to the appropriate values, click the 'Save' button in the top right.
+> - Change the options to the appropriate values, then click the 'Save' button in the top right.
 >
 > <br>
 
@@ -82,7 +80,7 @@
 > - To do so, open a new bash console in the 'O-Book' directory.
 > - Enter
 > ```
->	python project_setup.py
+> python project_setup.py
 > ```
 > Assuming you get no errors, everything is now set up correctly.
 > - Use the burger menu (three bars in the top right) to select 'Consoles'.
@@ -101,6 +99,7 @@
 >> - Click on 'Create Secret Key' on the right.
 >> - Copy the key when it is presented to you. Paste this **BETWEEN THE QUOTES** in the
 >> 'stripe.env' file.
+>> - Click the 'Save' button in the top right.
 >
 > **Note: Stripe offers four types of keys: Live and Test, and Secret and Public versions**
 > **of both. For use on a live site, you need the Secret Live key (Starts: sk_live) but for**
@@ -112,6 +111,7 @@
 >> - Click 'Create API Key', then name the key and select 'Full Access'.
 >> - Copy the key when it is presented to you. Paste this **BETWEEN THE QUOTES** in the
 >> 'sendgrid.env' file.
+>> - Click the 'Save' button in the top right.
 >
 > - Before closing the last file, click the 'Reload Site' button (the refresh symbol) in the top right.
 >
