@@ -134,52 +134,20 @@ def signup():
         if event_closed(event) or not maps_left:
             app.logger.info('Event closing date passed.')
             return htmltemplates.warning(title='Orienteering Signup - Enter', script=script, heading='This event is now closed', message=event_summary, footer=htmltemplates.navbar.format(session['file_name']))
-
+        
         elif late_entries(event):
+            title = 'Limited maps remaining'
+            heading = 'Limited Maps Remaining - Enter your details <p><small>Entry fees include a late entry premium</small></p><p>Every attendee must be registerred - if entering as a family select the shadowing option for the other family members.</p>'
+            first_section = htmltemplates.warning_box.format(message=maps_message) + name_selection
             app.logger.info('Late entries open.')
-            return htmltemplates.get_form(11, title='Limited maps remaining', modal=modal, heading='Limited Maps Remaining - Enter your details <p><small>Entry fees include a late entry premium</small></p><p>Every attendee must be registerred - if entering as a family select the shadowing option for the other family members.</p>', info=event_summary, footer=htmltemplates.navbar.format(session['file_name']),
-                                submit_loc="/orienteering/signup", add_script=script).format(htmltemplates.warning_box.format(message=maps_message),
-                                                                            name_section,
-                                                                            htmltemplates.input_box_help('Email', 'Contact Email Address', help_title, help_info, valid='email', required='True'),
-                                                                            htmltemplates.input_box_help('Phone', 'Contact Phone Number', help_title, help_info, valid='tel', required='True'),
-                                                                            htmltemplates.tick_to_close('<strong>Untick this box if NOT a member</strong> of a British/Scottish Orienteering (all {} members should tick this)'.format(config.lookup('CLUB')), 'member', htmltemplates.select_box_ls('Club', club_list, True, 'id="Club"')
-                                                                                +"""<script>
-                                                                                        function togglerqd() {
-                                                                                            if (document.getElementById("dib").checked == true || document.getElementById("sha").checked == true){
-                                                                                                document.getElementById("Dibber").removeAttribute("required");
-                                                                                            } else {
-                                                                                                document.getElementById("Dibber").setAttribute("required","");
-                                                                                            }
-                                                                                            if (document.getElementById("sha").checked == true){
-                                                                                                document.getElementById("Sex").removeAttribute("required");
-                                                                                                document.getElementById("YOB").removeAttribute("required");
-                                                                                            } else {
-                                                                                                document.getElementById("Sex").setAttribute("required","");
-                                                                                                document.getElementById("YOB").setAttribute("required","");
-                                                                                            }
-                                                                                            if (document.getElementById("member").checked == true){
-                                                                                                document.getElementById("Club").setAttribute("required","");
-                                                                                            } else {
-                                                                                                document.getElementById("Club").removeAttribute("required");
-                                                                                            }
-                                                                                        }
-                                                                                    </script>""", 'data-toggle="collapse" data-target="#collapsemember" onclick="togglerqd()" checked'),
-                                                                                "<p><strong>Course Details:</strong><p>",
-                                                                                htmltemplates.tick_to_close_multi(label="This participant is shadowing",
-                                                                                action = 'data-toggle="collapse" data-target=".multi-collapse" onclick="togglerqd()"',
-                                                                                id='sha',
-                                                                                content=htmltemplates.select_box_ls('Sex', ['Male', 'Female'], True, 'id="Sex"')
-                                                                                + htmltemplates.input_box('YOB', 'Year Of Birth', valid='number', required='True', extra_params='min="1900" max="2021"')
-                                                                                + dibber_section),
-                                                                                htmltemplates.collapse_box_closed_multi.format(id='sha2', content=htmltemplates.toggle_box.format(id='shamap', label='Shadow With Map?', action='')),
-                                                                                '<div></div>',
-                                                                                htmltemplates.select_box_dict('Course', session['courses'], required='True'),
-                                                                                htmltemplates.select_box_ls('PREFERRED Start Time', session['starts'], required='True'))
-
         else:
+            title = 'Orienteering Signup - Enter'
+            heading = '<p>Enter your details</p><p style="color:red;"><small>Every attendee must be registerred separately - if entering as a family select the shadowing option for the other family members.</small></p>'
+            first_section = name_selection
             app.logger.info('Normal entries open.')
-            return htmltemplates.get_form(10, title='Orienteering Signup - Enter', modal=modal, heading='<p>Enter your details</p><p style="color:red;"><small>Every attendee must be registerred separately - if entering as a family select the shadowing option for the other family members.</small></p>', info=event_summary, footer=htmltemplates.navbar.format(session['file_name']),
-                                    submit_loc="/orienteering/signup", add_script=script).format(name_section,
+            
+        return htmltemplates.get_form(10, title=title, modal=modal, heading=heading, info=event_summary, footer=htmltemplates.navbar.format(session['file_name']),
+                                    submit_loc="/orienteering/signup", add_script=script).format(first_section,
                                                                                 htmltemplates.input_box_help('Email', 'Contact Email Address', help_title, help_info, valid='email', required='True'),
                                                                                 htmltemplates.input_box_help('Phone', 'Contact Phone Number', help_title, help_info, valid='tel', required='True'),
                                                                                 htmltemplates.tick_to_close('<strong>Untick this box if NOT a member</strong> of a British/Scottish Orienteering (all {} members should tick this)'.format(config.lookup('CLUB')), 'member', htmltemplates.select_box_ls('Club', club_list, True, 'id="Club"')
