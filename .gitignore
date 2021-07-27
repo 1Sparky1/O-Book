@@ -7,3 +7,5 @@ events/pending/*
 **/*.lock
 __pycache__/
 **/*.pycsendgrid.env
+config.txt
+Entries_Privacy_Notice.html
