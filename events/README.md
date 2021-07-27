@@ -40,18 +40,18 @@
 > directory as the file you want to move.
 > - Enter into the console
 > ```
->   mv my_file ~/mysite/O-Book/folder
+> mv my_file ~/mysite/O-Book/folder
 > ```
 > replacing *my_file* with the name of the file, **INCLUDING** the file extension,
 > and *folder* the with sub-directory you wish to move it to
 >
 > - For example, if you wished to archive an event, you would enter
 > ```
->	mv old_event.xlsx ~/mysite/O-Book/events/archive
+> mv old_event.xlsx ~/mysite/O-Book/events/archive
 > ```	
 > - Or if you wanted to make a pending event live, you would enter
 > ```
->	mv new_event.xlsx ~/mysite/O-Book/events
+> mv new_event.xlsx ~/mysite/O-Book/events
 > ```
 >
 > <br>
