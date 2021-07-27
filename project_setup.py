@@ -10,22 +10,12 @@ import os
 import config_setup as config
 
 project = os.path.split(__file__)[0]
-
 skeleton = [project+'/events/archive',
             project+'/events/pending',
             project+'/private']
 
-for path in skeleton:
-    if os.path.exists(path):
-        print('Directory {} already exists. Skipping.'.format(path))
-        continue
-    try:
-        os.mkdir(path)
-    except OSError:
-        print('Failed to create new directory {}. Please create directory manually'.format(path))
-    else:
-        print('New directory {} created successfully.'.format(path))
-        
+modules = ['sendgrid', 'dotenv']
+
 html = '''<html>
             <head>
                 <meta charset="utf-8">
@@ -120,8 +110,21 @@ html = '''<html>
                             notice=config.lookup('PRIVACY_NOTICE'),
                             site=config.lookup('CLUB_SITE'),
                             club=config.lookup('CLUB'))
+
+for path in skeleton:
+    if os.path.exists(path):
+        print('Directory {} already exists. Skipping...'.format(path))
+        continue
+    try:
+        os.mkdir(path)
+    except OSError:
+        print('Failed to create new directory {}. Please create directory manually'.format(path))
+    else:
+        print('New directory {} successfully created.'.format(path))
+        
+
 if os.path.isfile(project+'/Entries_Privacy_Notice.html'):
-    print('Privacy Notice already exists, skipping.')
+    print('Privacy Notice already exists, skipping...')
 else:
     try:
         p = open('Entires_Privacy_Notice.html', 'w')
@@ -131,3 +134,36 @@ else:
         print('WARNING! Failed to create Privacy Notice from config file.')
     else:
         print('Privacy Notice successfully created from config file.')
+        
+if os.path.isfile(project+'/sendgrid.env'):
+    print('Sendgrid Environment already exists. Skipping...')
+else:
+    try:
+        sg = open('sendgrid.env', 'w')
+        sg.write("export SENDGRID_API_KEY=''")
+        sg.close()
+    except:
+        print('Failed to create SendGrid Environment. Please create file manually.')
+    else:
+        print('SendGrid Environment successfully created.')
+        
+if os.path.isfile(project+'/stripe.env'):
+    print('Stripe Environment already exists. Skipping...')
+else:
+    try:
+        s = open('stripe.env', 'w')
+        s.write("export STRIPE_API_KEY=''")
+        s.close()
+    except:
+        print('Failed to create Stripe Environment. Please create file manually.')
+    else:
+        print('Stripe Environment successfully created.')
+
+for module in modules:
+    try:
+        os.system('pip3.6 install --user {}'.format(module))
+    except OSError:
+        print('Failed to install module {}.'.format(module))
+    else:
+        print('Module {} successfully installed.'.format(module))
+    
