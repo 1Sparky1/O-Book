@@ -47,8 +47,9 @@
 
 ### Setting Up The Code
 > <br>
->
-> - In order to set up the code, click on the 'Files' tab at the top of the page.
+> 
+> In order to set up the code, you need to clone the GitHub repository.
+> - Use the burger menu (three bars in the top right) to select 'Files'.
 > - Click 'mysite/' in the directory list.
 > - Press the 'delete' button (the bin) next to 'flask_app.py'.
 > - Click 'Open Bash console here' above the file list.
@@ -66,7 +67,7 @@
 > <br>
 >
 > The next file to set up is the config file.
-> - Click on the 'Files' tab again.
+> - Click on the 'Files' tab at the top of the page.
 > - Select 'mysite/' from the directory list, then 'O-Book/'.
 > - Open 'config.txt' in the file list.
 > - Change the options to the appropriate values, then click the 'Save' button in the top right.
