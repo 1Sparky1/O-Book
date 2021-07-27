@@ -4,10 +4,13 @@ Created on Tue Jul 27 10:11:03 2021
 
 @author: spark
 """
+import os
+
+project = os.path.split(__file__)[0]
 
 def config():
     configs = {}
-    f = open('config.txt', 'r')
+    f = open('{}/config.txt'.format(project), 'r')
     for line in f:
         if (line[0] == '#') or (line == '\n'):
             continue

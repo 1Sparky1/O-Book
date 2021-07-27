@@ -211,7 +211,7 @@ navbar = '''
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarToggler">
-            <a class="navbar-brand" href="{site}">{name} Website</a>
+            <a class="navbar-brand" href="{}">{} Website</a>
             <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
               <li class="nav-item active">
                 <a class="nav-link" href="/">Enter event <span class="sr-only">(current)</span></a>
@@ -231,7 +231,7 @@ navbar = '''
             </ul>
         </div>
     </nav>
-    '''.format(site=config.lookup('CLUB_SITE'),name=config.lookup('CLUB'))
+    '''.format(config.lookup('CLUB_SITE'),config.lookup('CLUB'),'{}')
 
 covid_modal = '''   <div class="container">
 
