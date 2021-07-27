@@ -10,3 +10,9 @@ on: [pull_request]
 
 jobs:
   documentation: README.md
+  
+  runs-on: ubuntu-latest
+    steps:
+    - uses: actions/labeler@v3
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
