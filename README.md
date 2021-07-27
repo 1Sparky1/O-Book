@@ -44,7 +44,7 @@
 >
 > - To prepare for cloning later, also replace the line
 > ```
-> project_home = '/home/OBookTest/mysite'
+> project_home = '/home/OB'
 > ```
 > With
 > ```
