@@ -143,7 +143,7 @@
 > may need to make
 > - Enter
 > ```
-> python changelogs.py
+> python changelog.py
 > ```
 >
 > <br>
