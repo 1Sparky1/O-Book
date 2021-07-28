@@ -10,3 +10,4 @@ __pycache__/
 !README.md
 config.txt
 Entries_Privacy_Notice.html
+changelogs/changelog.stache

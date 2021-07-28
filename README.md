@@ -128,6 +128,26 @@
 >
 > <br>
 
+### Updating The Code
+> <br>
+>
+> As work on O-Book is a continuous project, changes will be made to the code on the GitHub to
+> address new feature requests and bug reports. In order to have these changes made live on
+> your site
+> - Open a new bash console in the 'O-Book' directory.
+> - Enter
+> ```
+> git pull
+> ```
+> To check what has been changed with this update, and for information on any changes you
+> may need to make
+> - Enter
+> ```
+> python changelogs.py
+> ```
+>
+> <br>
+
 <br>
 
 # PROJECT DETAILS

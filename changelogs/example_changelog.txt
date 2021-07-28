@@ -1,0 +1,14 @@
+# This is an example changelog. To create a new changelog,
+# copy this one, and rename it 'cl_[a descriptive name]'.
+# Then fill out the details below.
+#
+# Tags - Bugfix, Documentation, Enhancement, Tweak, Codebase
+# Note: Codebase changes will not notify users
+
+Author: YourNameHere
+Date: Date of last commit (dd/mm/yyyy)
+Tags: Choose from above tags (Seperate, With, Commas)
+Changes:
+	- List your changes here
+	- You can make multiple entries
+	- Make sure to detail any changes users need to make
