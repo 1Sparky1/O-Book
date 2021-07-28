@@ -138,12 +138,12 @@ def signup():
         elif late_entries(event):
             title = 'Limited maps remaining'
             heading = 'Limited Maps Remaining - Enter your details <p><small>Entry fees include a late entry premium</small></p><p>Every attendee must be registerred - if entering as a family select the shadowing option for the other family members.</p>'
-            first_section = htmltemplates.warning_box.format(message=maps_message) + name_selection
+            first_section = htmltemplates.warning_box.format(message=maps_message) + name_section
             app.logger.info('Late entries open.')
         else:
             title = 'Orienteering Signup - Enter'
             heading = '<p>Enter your details</p><p style="color:red;"><small>Every attendee must be registerred separately - if entering as a family select the shadowing option for the other family members.</small></p>'
-            first_section = name_selection
+            first_section = name_section
             app.logger.info('Normal entries open.')
             
         return htmltemplates.get_form(10, title=title, modal=modal, heading=heading, info=event_summary, footer=htmltemplates.navbar.format(session['file_name']),
