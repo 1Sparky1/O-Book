@@ -42,13 +42,13 @@
 > **NOTE: Replace 'Europe/London' with your appropriate contient/city if you aren't using**
 > **GMT/BST time.**
 >
-> - To prepare for cloning later, also replace the line
+> - To prepare for cloning later, also add '/O-Book' to
 > ```
-> project_home = '/home/OBookTest/mysite'
+> project_home = '/home/username/mysite'
 > ```
-> With
+> after 'mysite', making sure it is still **inside the quotes**. It should look like
 > ```
-> project_home = '/home/OBookTest/mysite/O-Book'
+> project_home = '/home/username/mysite/O-Book'
 > ```
 >
 > - Click the 'Save' button in the top right.
