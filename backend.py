@@ -60,16 +60,17 @@ def read_course(event, courses):
     for row in courses.iter_rows(min_row=2, max_col=4, values_only=True):
         warning=""
         #logging.info(row)
-        if row[1]:
-            descrip = row[1]
-            if row[3].upper()=="YES": warning = "<16s must be shadowed - "
-        else:
-            descrip = ""
-        if not late_entries(event):
-            course[row[0]] = warning+descrip
-        elif not row[2] == 0:
-            #only lists courses with maps available
-            course[row[0]] = warning+descrip
+        if row[0]:
+            if row[1]:
+                descrip = row[1]
+                if row[3].upper()=="YES": warning = "<16s must be shadowed - "
+            else:
+                descrip = ""
+            if not late_entries(event):
+                course[row[0]] = warning+descrip
+            elif not row[2] == 0:
+                #only lists courses with maps available
+                course[row[0]] = warning+descrip
     return course
 
 def get_event_details(event):
