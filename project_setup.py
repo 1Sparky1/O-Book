@@ -15,7 +15,7 @@ skeleton = [project+'/events/archive',
             project+'/events/pending',
             project+'/private']
 
-modules = ['sendgrid', 'python-dotenv']
+modules = ['sendgrid', 'python-dotenv', 'openpyxl==2.6.4']
 
 html = '''<html>
             <head>
