@@ -141,5 +141,3 @@ Change Type(s): {tags}
                                   tags=tags.upper(),
                                   changes=changes))
         add_log_to_stache(file, log)
-    
-show_new_logs(True)
