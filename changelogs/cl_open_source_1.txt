@@ -1,0 +1,13 @@
+# This is an example changelog. To create a new changelog,
+# copy this one, and rename it 'cl_[a descriptive name]'.
+# Then fill out the details below.
+#
+# Tags - Bugfix, Documentation, Enhancement, Tweak, Codebase
+# Note: Codebase changes will not notify users
+
+Author: 1Sparky1 (Ben)
+Date: 28/07/2021
+Tags: Documentation, Enhancement
+Changes:
+	- Project README now details how to pull to update your codebase
+	- Added this new changelog feature

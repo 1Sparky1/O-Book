@@ -8,6 +8,7 @@ Created on Tue Jul 27 11:17:29 2021
 
 import os
 import config_setup as config
+import changelogs
 
 project = os.path.split(__file__)[0]
 skeleton = [project+'/events/archive',
@@ -158,6 +159,23 @@ else:
         print('Failed to create Stripe Environment. Please create file manually.')
     else:
         print('Stripe Environment successfully created.')
+        
+if os.path.isfile(project+'/changelogs/changelog.stache'):
+    print('Changelog Stache already exists. Skipping...')
+else:
+    try:
+        cs = open('changelog.stache', 'w')
+        cs.write('''# Stache Log #
+# Contains all the previously read changelogs
+\n
+@000''')
+        cs.close()
+        changelogs.show_new_logs(False)
+    except:
+        print('Failed to create Changelog Stache. Please create file manually.')
+    else:
+        print('Changelog Stache successfully created.')
+        
 
 for module in modules:
     try:
