@@ -164,11 +164,8 @@ if os.path.isfile(project+'/changelogs/changelog.stache'):
     print('Changelog Stache already exists. Skipping...')
 else:
     try:
-        cs = open('changelog.stache', 'w')
-        cs.write('''# Stache Log #
-# Contains all the previously read changelogs
-\n
-@000''')
+        cs = open('changelogs/changelog.stache', 'w')
+        cs.write('''# Stache Log #\n# Contains all the previously read changelogs\n\n@000''')
         cs.close()
         changelogs.show_new_logs(False)
     except:
