@@ -81,14 +81,19 @@
 > - Select 'mysite/' from the directory list, then 'O-Book/'.
 > - Open 'config.txt' in the file list.
 > - Change the options to the appropriate values, then click the 'Save' button in the top right.
->
+> 
+> **NOTE: The only parts of the config files needing replaced are the placeholder names. The ALL CAPS**
+> **names left of the equals, and the equals, MUST BE UNCHANGED. The comments right of the '#' can be**
+> **deleted, though this is unnecessary. The header and blank line MUST ALSO BE UNCHANGED.**
 > <br>
 
 ### Generating Project Skeleton
 > <br>
 >
 > The next step in setting up the site is to run the setup script.
-> - To do so, open a new bash console in the 'O-Book' directory.
+> - Use the burger menu (three bars in the top right) to select 'Files'.
+> - Select 'mysite/' from the directory list, then 'O-Book/'
+> - Click 'Open Bash console here' above the file list.
 > - Enter
 > ```
 > python project_setup.py
@@ -112,7 +117,7 @@
 >> 'stripe.env' file.
 >> - Click the 'Save' button in the top right.
 >
-> **Note: Stripe offers four types of keys: Live and Test, and Secret and Public versions**
+> **NOTE: Stripe offers four types of keys: Live and Test, and Secret and Public versions**
 > **of both. For use on a live site, you need the Secret Live key (Starts: sk_live) but for**
 > **testing, you should use the Secret Test key (Starts: sk_test). Test keys don't actually**
 > **charge anything, so are good for making sure the system works.**
