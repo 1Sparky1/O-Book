@@ -172,3 +172,16 @@
 > used for any event.
 >
 > <br>
+
+## FAQs
+> <br>
+>
+> This PDF contains a list of the most common questions users have about the site.
+> While these are ready to go and use, you may wish to replace the file with more
+> tailored answers, including contact emails or other questions you find getting
+> asked a lot. The easiest way to do so would be to copy and paste the contents
+> into a word processor, make your modifications, and export the file as a PDF.
+> 
+> **NOTE: The file MUST still be called 'FAQs.pdf' or the code will not be able to locate it.**
+>
+> <br>
