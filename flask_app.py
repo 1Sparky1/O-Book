@@ -146,10 +146,11 @@ def signup():
             first_section = name_section
             app.logger.info('Normal entries open.')
             
-        return htmltemplates.get_form(10, title=title, modal=modal, heading=heading, info=event_summary, footer=htmltemplates.navbar.format(session['file_name']),
+        return htmltemplates.get_form(11, title=title, modal=modal, heading=heading, info=event_summary, footer=htmltemplates.navbar.format(session['file_name']),
                                     submit_loc="/orienteering/signup", add_script=script).format(first_section,
                                                                                 htmltemplates.input_box_help('Email', 'Contact Email Address', help_title, help_info, valid='email', required='True'),
                                                                                 htmltemplates.input_box_help('Phone', 'Contact Phone Number', help_title, help_info, valid='tel', required='True'),
+                                                                                htmltemplates.toggle_box.format(id='student', label='I am a student', action=''),
                                                                                 htmltemplates.tick_to_close('<strong>Untick this box if NOT a member</strong> of a British/Scottish Orienteering (all {} members should tick this)'.format(config.lookup('CLUB')), 'member', htmltemplates.select_box_ls('Club', club_list, True, 'id="Club"')
                                                                                 +"""<script>
                                                                                         function togglerqd() {
@@ -225,9 +226,12 @@ def signup():
             if request.form.get('member'):
                 club = request.form["Club"]
             else:
-                club = 'Independant'
+                club = 'Independent'
             dib = 'N/A'
         fee = session['age_classes'][age_class_mod]
+        if((age_class != 'Shadowing') and (get_age_class(age) > 18)):
+            if request.form.get('student'):
+                fee -= details["student_discount"]
         course = request.form["Course"]
         start_time = request.form["PREFERRED Start Time"]
         app.logger.info('Data from form: {} opened'.format([name, email, phone, age_class, fee, course, start_time, dib]))

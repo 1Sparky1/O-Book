@@ -81,7 +81,6 @@ def get_event_details(event):
     details["members_only"] = False
     details["card_payments"] = False
     details['late_entries'] = False
-
     details["name"] = str(event['B1'].value)
     details["url"] = str(event['B2'].value)
     details["date"] = event['B3'].value
@@ -100,6 +99,7 @@ def get_event_details(event):
         details["entry_premium"]=event ['B10'].value
         # no idea why necessary - but force late entries to false when B10 is blank - fixed a bug!
         if event ['B10'].value == None: details["late_entries"]=False
+    details["student_discount"] = event['B13'].value
     return details
 
 def late_entries(event):

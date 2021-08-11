@@ -1,0 +1,14 @@
+# This is an example changelog. To create a new changelog,
+# copy this one, and rename it 'cl_[a descriptive name]'.
+# Then fill out the details below.
+#
+# Tags - Bugfix, Documentation, Enhancement, Tweak, Codebase
+# Note: Codebase changes will not notify users
+
+Author: 1Sparky1 (Ben)
+Date: 11/08/2021
+Tags: Bugfix, Documentation
+Changes:
+	- Added an option for student discounts (Be aware, there are no tests for this. It is entirely trust based)
+	- Fixed a spelling mistake with the 'Independent' class
+	- Added steps to reload site after pull to README

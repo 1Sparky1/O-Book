@@ -150,6 +150,9 @@
 > ```
 > python changelog.py
 > ```
+> In order to update your site with the new code
+> - Open any of the site's files
+> - Click the 'Reload Site' button (the refresh symbol) in the top right.
 >
 > <br>
 
