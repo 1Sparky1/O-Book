@@ -7,7 +7,8 @@
 
 Author: 1Sparky1 (Ben)
 Date: 11/08/2021
-Tags: Bugfix
+Tags: Bugfix, Documentation
 Changes:
 	- Added an option for student discounts (Be aware, there are no tests for this. It is entirely trust based)
 	- Fixed a spelling mistake with the 'Independent' class
+	- Added steps to reload site after pull to README
