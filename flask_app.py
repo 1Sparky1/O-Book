@@ -229,7 +229,7 @@ def signup():
                 club = 'Independent'
             dib = 'N/A'
         fee = session['age_classes'][age_class_mod]
-        if((get_age_class(age) > 18) and (age_class != 'Shadowing')):
+        if((age_class != 'Shadowing') and (get_age_class(age) > 18)):
             if request.form.get('student'):
                 fee -= details["student_discount"]
         course = request.form["Course"]
