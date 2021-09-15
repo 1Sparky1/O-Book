@@ -6,7 +6,7 @@ Created on Wed Sep 15 18:47:44 2021
 """
 
 import os
-import datetime
+import time
 import config_setup as config
 
 
@@ -21,6 +21,6 @@ def reload_site():
     wsgi += "wsgi.py"
     w_path = "/var/www/"+wsgi
     
-    time = datetime.timestamp()
+    t = time.time()
     
-    os.utime(w_path, (time, time))
+    os.utime(w_path, (t, t))
