@@ -19,6 +19,7 @@ wsgi += "wsgi.py"
 rest_of_file = ""
 
 f = open("/var/www/"+wsgi, 'r')
+print(f.read())
 for line in f:
     print(line)
     if line == "from flask_app import app as application  # noqa":
