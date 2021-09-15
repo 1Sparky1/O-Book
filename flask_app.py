@@ -79,6 +79,10 @@ def home():
                                         )
 
 
+@app.route('/orienteering')
+def wrong_adress():
+    return redirect("/", 303)
+
 @app.route('/orienteering/signup', methods=["GET", "POST"])
 def signup():
     script = checkout_required(session)
