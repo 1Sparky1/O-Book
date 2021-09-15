@@ -16,13 +16,19 @@ for each in parts:
     wsgi += "_"
 wsgi += "wsgi.py"
 
-f = open("/var/www/"+wsgi, 'w')
-lines = f.readlines()
-for line in lines:
+rest_of_file = ""
+
+f = open("var/www/"+wsgi, 'r')
+for line in f:
     if line == "from flask_app import app as application  # noqa":
-        line = "from maintainance_site import app as application  # noqa"
+        new_line = "from maintainance_site import app as application  # noqa"
         print("Site down for maintainance")
     elif line == "from maintainance_site import app as application  # noqa":
-        line = "from flask_app import app as application  # noqa"
+        new_line = "from flask_app import app as application  # noqa"
         print("Site live for entries")
+    else:
+        rest_of_file += line
 f.close()
+
+f = open("var/www/"+wsgi, 'w')
+f.write(rest_of_file+'\n'+new_line)
