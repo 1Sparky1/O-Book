@@ -30,5 +30,5 @@ for line in f:
         rest_of_file += line
 f.close()
 
-f = open("var/www/"+wsgi, 'w')
+f = open("/var/www/"+wsgi, 'w')
 f.write(rest_of_file+'\n'+new_line)
