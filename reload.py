@@ -21,7 +21,6 @@ def reload_site():
     wsgi += "wsgi.py"
     w_path = "/var/www/"+wsgi
     
-    time = datetime.datetime
-    epoch = time.timestamp()
+    time = datetime.timestamp()
     
-    os.utime(w_path, (epoch, epoch))
+    os.utime(w_path, (time, time))
