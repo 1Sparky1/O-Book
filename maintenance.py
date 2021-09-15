@@ -16,7 +16,7 @@ for each in parts:
     wsgi += "_"
 wsgi += "wsgi.py"
 
-f = open("var/www/"+wsgi, 'w')
+f = open("/var/www/"+wsgi, 'w')
 for line in f:
     if line == "from flask_app import app as application  # noqa":
         line = "from maintainance_site import app as application  # noqa"
