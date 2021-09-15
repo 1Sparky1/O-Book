@@ -188,3 +188,24 @@
 > **NOTE: The file MUST still be called 'FAQs.pdf' or the code will not be able to locate it.**
 >
 > <br>
+
+## EDIT_ENTRY.PY
+> <br>
+>
+> This file is a simple utility for quickly modifying entries. It is most useful
+> when a competitior needs to change their timeslot or other details, as it
+> allows the modification to be made without fiddling with the .xlsx file and/or 
+> the live site down to avoid double booking.
+>
+> To use the program
+> - First, open a bash console in your O-Book directory
+> - Now, type
+> ```
+> python edit_entry.py
+> ```
+> - This will prompt you with a list of all your events, with a number in square brackets on the far left. Type the number next to the event you need to edit.
+> - This will now prompt you with yet another list, this time of every entry already made in that event. Again, enter the number next to the entry you need to edit.
+> - Once more, you will be prompted with a list of all the details for that entry. Enter the letter associated with the necessary field.
+> - You may now enter your new value. Once you press enter, you must confirm the change by typing either "Y" or "y" before it will be changed. If you wish to cancel your entry, type anything else or simple press enter.
+>
+> <br>
