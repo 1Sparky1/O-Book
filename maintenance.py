@@ -19,9 +19,8 @@ wsgi += "wsgi.py"
 rest_of_file = ""
 
 f = open("/var/www/"+wsgi, 'r')
-print(f.read())
-for line in f:
-    print(line)
+lines = f.readlines()
+for line in lines:
     if line == "from flask_app import app as application  # noqa":
         new_line = "from maintainance_site import app as application  # noqa"
         print("Site down for maintainance")
