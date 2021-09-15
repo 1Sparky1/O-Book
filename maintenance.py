@@ -12,9 +12,9 @@ parts = YOUR_DOMAIN.split('.')
 wsgi = ""
 
 for each in parts:
-    wsgi.append(each)
-    wsgi.append("_")
-wsgi.append("wsgi.py")
+    wsgi += each
+    wsgi += "_"
+wsgi += "wsgi.py"
 
 f = open("var/www/"+wsgi, 'rw')
 for line in f:
