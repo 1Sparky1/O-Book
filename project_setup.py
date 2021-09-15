@@ -181,4 +181,16 @@ for module in modules:
         print('Failed to install module {}.'.format(module))
     else:
         print('Module {} successfully installed.'.format(module))
+        
+YOUR_DOMAIN = config.lookup('DOMAIN')
+parts = YOUR_DOMAIN.split('.')
+wsgi = ""
+
+for each in parts:
+    wsgi += each
+    wsgi += "_"
+wsgi += "wsgi.py"
+w_path = "/var/www/"+wsgi
+        
+os.system("touch {}".format(w_path))
     

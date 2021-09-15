@@ -6,6 +6,7 @@ Created on Wed Sep 15 16:06:26 2021
 """
 
 import config_setup as config
+import os
 
 YOUR_DOMAIN = config.lookup('DOMAIN')
 parts = YOUR_DOMAIN.split('.')
@@ -15,10 +16,11 @@ for each in parts:
     wsgi += each
     wsgi += "_"
 wsgi += "wsgi.py"
+w_path = "/var/www/"+wsgi
 
 rest_of_file = ""
 
-f = open("/var/www/"+wsgi, 'r')
+f = open(w_path, 'r')
 lines = f.readlines()
 for line in lines:
     if line == "from flask_app import app as application  # noqa":
@@ -31,6 +33,7 @@ for line in lines:
         rest_of_file += line
 f.close()
 
-f = open("/var/www/"+wsgi, 'w')
-f.write(rest_of_file+'\n'+new_line)
+f = open(w_path, 'w')
+f.write(rest_of_file+new_line)
 f.close()
+os.system("touch {}".format(w_path))
