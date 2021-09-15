@@ -6,9 +6,10 @@ import openpyxl as xl
 from datetime import datetime, timedelta
 import glob
 from filelock import FileLock
+import os
 
-SITEPATH = "/home/fvo/mysite/"
-EVENTSPATH = SITEPATH+"events/"
+SITEPATH = os.path.split(__file__)[0]
+EVENTSPATH = SITEPATH+"/events/"
 
 def delete_row_content(starts,i):
     cols='BCDEFGHI'
