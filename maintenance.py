@@ -7,6 +7,7 @@ Created on Wed Sep 15 16:06:26 2021
 
 import config_setup as config
 import os
+from reload import *
 
 YOUR_DOMAIN = config.lookup('DOMAIN')
 parts = YOUR_DOMAIN.split('.')
@@ -36,4 +37,5 @@ f.close()
 f = open(w_path, 'w')
 f.write(rest_of_file+new_line)
 f.close()
-os.system("touch {}".format(w_path))
+
+reload_site()

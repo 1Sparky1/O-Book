@@ -9,6 +9,7 @@ Created on Tue Jul 27 11:17:29 2021
 import os
 import config_setup as config
 import changelogs
+from reload import *
 
 project = os.path.split(__file__)[0]
 skeleton = [project+'/events/archive',
@@ -182,15 +183,5 @@ for module in modules:
     else:
         print('Module {} successfully installed.'.format(module))
         
-YOUR_DOMAIN = config.lookup('DOMAIN')
-parts = YOUR_DOMAIN.split('.')
-wsgi = ""
-
-for each in parts:
-    wsgi += each
-    wsgi += "_"
-wsgi += "wsgi.py"
-w_path = "/var/www/"+wsgi
-        
-os.system("touch {}".format(w_path))
+reload_site()
     
